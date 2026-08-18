@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, LoaderCircle, ShieldCheck, Sparkles, Wrench, X } from "lucide-react";
+import { AlertCircle, Check, ChevronRight, LoaderCircle, ShieldCheck, Sparkles, Wrench, X } from "lucide-react";
 
 type Agent = { id: string; name: string; description: string; tools: string[]; accent: string };
 type AgentRun = {
@@ -19,6 +19,7 @@ type AgentRun = {
 export function AgentDock({ api, projectId, requirementId, locale }: { api: string; projectId: string; requirementId: string; locale: "en" | "es" }) {
   const [open, setOpen] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
   const [agentId, setAgentId] = useState("delivery-analyst");
   const [question, setQuestion] = useState("");
   const [consent, setConsent] = useState(false);
@@ -32,13 +33,15 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
 
   useEffect(() => {
     if (!open || agents.length) return;
+    setLoadingAgents(true);
     fetch(`${api}/api/v1/agents`)
       .then(async (response) => {
         if (!response.ok) throw new Error("agents unavailable");
         const payload = (await response.json()) as { items: Agent[] };
         setAgents(payload.items);
       })
-      .catch(() => setError(isEs ? "No se pudieron cargar los agentes." : "Agents could not be loaded."));
+      .catch(() => setError(isEs ? "No se pudieron cargar los agentes." : "Agents could not be loaded."))
+      .finally(() => setLoadingAgents(false));
   }, [api, agents.length, isEs, open]);
 
   useEffect(() => {
@@ -127,6 +130,8 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
           </header>
           <div className="reference-agent-safety"><ShieldCheck size={15} /><span>{isEs ? "Las acciones de escritura siempre requieren aprobación." : "Write actions always require approval."}</span></div>
           <div className="reference-agent-list">
+            {loadingAgents && <div className="reference-agent-loading"><LoaderCircle className="reference-agent-spinner" size={15} />{isEs ? "Cargando agentes..." : "Loading agents..."}</div>}
+            {!loadingAgents && agents.length === 0 && !error && <div className="reference-agent-empty">{isEs ? "No hay agentes disponibles para este workspace." : "No agents are available for this workspace."}</div>}
             {agents.map((agent) => (
               <button key={agent.id} className={`reference-agent-option${agent.id === agentId ? " is-selected" : ""}`} onClick={() => { setAgentId(agent.id); setRun(null); }}>
                 <span className={`reference-agent-icon agent-${agent.accent}`}><AgentAvatar agentId={agent.id} /></span>
@@ -147,15 +152,15 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
           {error && <p className="reference-agent-error">{error}</p>}
           {run && (
             <div className="reference-agent-result">
-              <div className="reference-agent-result-heading">
+              <div className={`reference-agent-result-heading is-${run.status}`}>
                 <span className="reference-agent-result-avatar"><AgentAvatar agentId={agentId} /></span>
-                <Check size={14} />
+                {run.status === "failed" ? <AlertCircle size={14} /> : <Check size={14} />}
                 {run.requires_approval ? (isEs ? "Propuesta pendiente" : "Proposal pending") : (isEs ? "Ejecución completada" : "Run completed")}
               </div>
               <div className="reference-agent-meta">{run.id ? `Run ${run.id}` : ""}{run.checkpoint_ids?.length ? ` · ${run.checkpoint_ids.length} ${isEs ? "checkpoints" : "checkpoints"}` : ""}</div>
               <div className="reference-agent-tools">{run.tool_calls.map((call) => <span key={call.tool}><Check size={12} />{call.tool.replaceAll("_", " ")}</span>)}</div>
               {run.proposal_id && <button className="reference-agent-approve" onClick={approve} disabled={approving}>{approving ? (isEs ? "Aprobando..." : "Approving...") : (isEs ? "Aprobar propuesta" : "Approve proposal")}</button>}
-              <pre>{JSON.stringify(run.result, null, 2)}</pre>
+              <AgentResultSummary result={run.result} locale={locale} />
             </div>
           )}
           {!run && recentRuns.length > 0 && <div className="reference-agent-history"><span className="reference-context-kicker">{isEs ? "ÚLTIMAS EJECUCIONES" : "RECENT RUNS"}</span>{recentRuns.map((item) => <div key={item.id} className="reference-agent-history-row"><span>{item.id}</span><small>{item.status}</small></div>)}</div>}
@@ -163,6 +168,36 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
       )}
     </div>
   );
+}
+
+function AgentResultSummary({ result, locale }: { result: Record<string, unknown>; locale: "en" | "es" }) {
+  const entries = Object.entries(result).filter(([, value]) => value !== null && value !== undefined && value !== "");
+  if (!entries.length) return <p className="reference-agent-result-empty">{locale === "es" ? "El agente no devolvió detalles adicionales." : "The agent returned no additional details."}</p>;
+  return (
+    <div className="reference-agent-result-summary">
+      {entries.slice(0, 5).map(([key, value]) => (
+        <div key={key} className="reference-agent-result-row">
+          <span>{humanizeAgentKey(key, locale)}</span>
+          <strong>{formatAgentValue(value, locale)}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function humanizeAgentKey(key: string, locale: "en" | "es") {
+  const labels: Record<string, [string, string]> = {
+    summary: ["Summary", "Resumen"], recommendation: ["Recommendation", "Recomendación"], confidence: ["Confidence", "Confianza"], status: ["Status", "Estado"], next_action: ["Next action", "Siguiente acción"], reasoning: ["Reasoning", "Criterio"],
+  };
+  return labels[key]?.[locale === "es" ? 1 : 0] || key.replaceAll("_", " ");
+}
+
+function formatAgentValue(value: unknown, locale: "en" | "es") {
+  if (typeof value === "boolean") return value ? (locale === "es" ? "Sí" : "Yes") : (locale === "es" ? "No" : "No");
+  if (typeof value === "number" && value >= 0 && value <= 1) return `${Math.round(value * 100)}%`;
+  if (Array.isArray(value)) return value.slice(0, 2).map((item) => typeof item === "string" ? item : JSON.stringify(item)).join(" · ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
 }
 
 function AgentAvatar({ agentId }: { agentId: string }) {
