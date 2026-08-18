@@ -52,7 +52,7 @@
 .reference-brand {
   display: flex;
   align-items: flex-start;
-  height: 81px;
+  height: 88px;
   padding: 10px 15px 17px;
 }
 .brand-lockup {
@@ -63,8 +63,8 @@
   object-position: left center;
 }
 .brand-lockup-compact {
-  width: 128px;
-  height: 34px;
+  width: 150px;
+  height: 40px;
 }
 .reference-nav {
   display: flex;
@@ -1996,12 +1996,12 @@
   }
   .reference-brand {
     justify-content: flex-start;
-    height: 38px;
+    height: 42px;
     padding: 0 5px;
   }
   .brand-lockup-compact {
-    width: 126px;
-    height: 30px;
+    width: 140px;
+    height: 34px;
     object-fit: contain;
   }
   .reference-nav {
