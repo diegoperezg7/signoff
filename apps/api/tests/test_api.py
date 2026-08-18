@@ -26,6 +26,14 @@ def test_review_token():
     assert response.json()['status'] == 'recorded'
 
 
+def test_client_review_evidence_reflects_verification_state():
+    evidence = client.get('/api/v1/review/acme-review-token').json()['evidence']
+    by_id = {item['id']: item['state'] for item in evidence}
+    assert by_id['REQ-023'] == 'demonstrated'
+    assert by_id['REQ-057'] == 'partially_demonstrated'
+    assert by_id['REQ-071'] == 'not_demonstrated'
+
+
 def test_scope_readiness_graph_and_acceptance():
     versions = client.get('/api/v1/projects/project_demo/scope/versions').json()
     assert versions[0]['version'] == 'v1'

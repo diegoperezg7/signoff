@@ -625,7 +625,27 @@ def review_pack(token: str) -> dict:
         projection = catalog.dashboard(ACME_PROJECT_ID, ACME_RELEASE_ID)
         if projection is None:
             raise HTTPException(404, "Review link not found or expired")
-        return {"project": projection["project"], "release": projection["project"]["release"], "story": {"promised": "A traceable Client Portal release.", "delivered": "71 of 86 requirements demonstrated.", "changed": "12 changes tracked; 8 approved.", "remaining": "11 failed verifications and 4 requirements pending.", "approval": "Client sign-off is pending."}, "requirements": projection["requirements"], "evidence": [{"id": item["id"], "artifact": f"{item['id'].lower()}-verification.png", "summary": "Verification evidence linked to this requirement."} for item in projection["requirements"]]}
+        evidence_state = {
+            "passed": "demonstrated",
+            "in_progress": "partially_demonstrated",
+            "not_started": "not_demonstrated",
+        }
+        evidence = [
+            {
+                "id": item["id"],
+                "artifact": f"{item['id'].lower()}-verification.png",
+                "state": evidence_state.get(item["verification"], "inconclusive"),
+                "summary": (
+                    "Verification passed for the active acceptance criteria."
+                    if item["verification"] == "passed"
+                    else "Verification is in progress and needs review."
+                    if item["verification"] == "in_progress"
+                    else "No conclusive verification run is available yet."
+                ),
+            }
+            for item in projection["requirements"]
+        ]
+        return {"project": projection["project"], "release": projection["project"]["release"], "story": {"promised": "A traceable Client Portal release.", "delivered": "71 of 86 requirements demonstrated.", "changed": "12 changes tracked; 8 approved.", "remaining": "11 failed verifications and 4 requirements pending.", "approval": "Client sign-off is pending."}, "requirements": projection["requirements"], "evidence": evidence}
     if token != "demo-review-token":
         raise HTTPException(404, "Review link not found or expired")
     return delivery_pack(CUSTOMER_PROJECT_ID)

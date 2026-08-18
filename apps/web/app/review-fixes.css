@@ -20,9 +20,9 @@
   font-weight: 600;
 }
 
-.review-brand .brand-lockup-compact {
+.review-brand .brand-lockup-frame-compact {
   width: 142px;
-  height: 52px;
+  height: 38px;
 }
 
 .review-summary {
@@ -69,6 +69,16 @@
 .review-page .evidence-row > div:nth-child(2) {
   min-width: 0;
   flex: 1;
+}
+
+.review-page .evidence-thumb.evidence-warn {
+  color: #b86a00;
+  background: #fff4d9;
+}
+
+.review-page .evidence-thumb.evidence-bad {
+  color: #c52f40;
+  background: #ffe4e8;
 }
 
 .review-actions {

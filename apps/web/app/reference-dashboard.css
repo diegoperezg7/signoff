@@ -174,14 +174,21 @@
   height: 88px;
   padding: 10px 8px 17px;
 }
-.brand-lockup {
+.brand-lockup-frame {
+  position: relative;
+  display: block;
   width: 180px;
-  height: auto;
-  max-height: 40px;
+  height: 40px;
+  flex: none;
+}
+.brand-lockup-frame > .brand-lockup {
+  width: 100%;
+  height: 100%;
+  max-height: none;
   object-fit: contain;
   object-position: left center;
 }
-.brand-lockup-compact {
+.brand-lockup-frame-compact {
   width: 172px;
   height: 46px;
 }
@@ -2030,9 +2037,11 @@
     padding-left: 0;
     padding-right: 0;
   }
-  .brand-lockup-compact {
+  .brand-lockup-frame-compact {
     width: 46px;
     height: 46px;
+  }
+  .brand-lockup-frame-compact > .brand-lockup-compact {
     object-fit: contain;
     object-position: center;
     content: url('/brand/signoff-mark-transparent.png');
@@ -2128,9 +2137,11 @@
     height: 42px;
     padding: 0 2px;
   }
-  .brand-lockup-compact {
+  .brand-lockup-frame-compact {
     width: 154px;
     height: 38px;
+  }
+  .brand-lockup-frame-compact > .brand-lockup-compact {
     object-fit: contain;
   }
   .reference-nav {
