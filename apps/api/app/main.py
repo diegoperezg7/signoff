@@ -17,7 +17,7 @@ from .domain import BugChangeAssessment, EvidenceRelationship, calculate_readine
 from .file_inspector import inspect_file
 from .providers import MockLLMProvider as ContractMockLLMProvider, OpenAIProvider
 from .persistence import PostgresRepository
-from .auth import CurrentUser, current_user
+from .auth import CurrentUser, current_user, require_role
 from .storage import LocalStorageProvider, S3StorageProvider
 from .jobs import InlineJobRunner
 from .security import DataClassification, PrivacyPolicy, classify_text, redact_sensitive
@@ -107,6 +107,10 @@ class AcceptanceDecisionRequest(BaseModel):
     comment: str = ""
 
 
+class ReleaseStatusRequest(BaseModel):
+    status: Literal["in_signoff", "ready", "on_hold", "accepted"]
+
+
 class HumanEvidenceRequest(BaseModel):
     requirement_id: UUID
     kind: Literal["screenshot", "video", "document", "link", "comment", "manual_test_result"]
@@ -184,6 +188,7 @@ job_runner = InlineJobRunner()
 privacy_policy = PrivacyPolicy()
 requirement_overrides: dict[tuple[str, str], dict] = {}
 change_overrides: dict[tuple[str, str], dict] = {}
+release_status_overrides: dict[tuple[str, str], str] = {}
 app = FastAPI(title="SDA API", version="0.1.0", description="Software Delivery Assurance API")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
@@ -295,7 +300,50 @@ def project_release_dashboard(project_id: str, release_id: str, user: CurrentUse
     projection = catalog.dashboard(project_id, release_id, user.organization_id)
     if projection is None:
         raise HTTPException(404, "Project or release not found")
+    override = release_status_overrides.get((project_id, release_id))
+    if override:
+        projection["project"] = {**projection["project"], "status": override}
     return projection
+
+
+@app.patch("/api/v1/projects/{project_id}/releases/{release_id}/status")
+def update_release_status(
+    project_id: str,
+    release_id: str,
+    payload: ReleaseStatusRequest,
+    user: CurrentUser = Depends(current_user),
+) -> dict:
+    require_role(user, "owner", "admin", "member")
+    if catalog.get_release(project_id, release_id, user.organization_id) is None:
+        raise HTTPException(404, "Project or release not found")
+    release_status_overrides[(project_id, release_id)] = payload.status
+    audit_event(
+        user,
+        "release_status_updated",
+        project_id=project_id,
+        release_id=release_id,
+        status=payload.status,
+    )
+    return {"project_id": project_id, "release_id": release_id, "status": payload.status}
+
+
+@app.post("/api/v1/projects/{project_id}/releases/{release_id}/send-for-acceptance")
+def send_release_for_acceptance(
+    project_id: str,
+    release_id: str,
+    user: CurrentUser = Depends(current_user),
+) -> dict:
+    require_role(user, "owner", "admin", "member")
+    if catalog.get_release(project_id, release_id, user.organization_id) is None:
+        raise HTTPException(404, "Project or release not found")
+    release_status_overrides[(project_id, release_id)] = "ready"
+    audit_event(
+        user,
+        "release_sent_for_acceptance",
+        project_id=project_id,
+        release_id=release_id,
+    )
+    return {"project_id": project_id, "release_id": release_id, "status": "ready"}
 
 
 @app.get("/api/v1/reference-dashboard")

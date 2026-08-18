@@ -58,6 +58,24 @@ def test_two_projects_use_one_dashboard_contract():
     assert customer['metrics']['requirements']['value'] == 12
 
 
+def test_release_status_and_acceptance_are_persisted_in_project_context():
+    response = client.patch(
+        '/api/v1/projects/project_acme/releases/release_2_3/status',
+        json={'status': 'on_hold'},
+    )
+    assert response.status_code == 200
+    assert response.json()['status'] == 'on_hold'
+    dashboard = client.get('/api/v1/projects/project_acme/releases/release_2_3/dashboard').json()
+    assert dashboard['project']['status'] == 'on_hold'
+
+    sent = client.post(
+        '/api/v1/projects/project_acme/releases/release_2_3/send-for-acceptance'
+    )
+    assert sent.status_code == 200
+    assert sent.json()['status'] == 'ready'
+    assert client.get('/api/v1/projects/project_acme/releases/release_2_3/dashboard').json()['project']['status'] == 'ready'
+
+
 def test_ai_proposal_requires_approval_and_is_traced():
     response = client.post('/api/v1/projects/project_demo/ai/tasks', json={'task': 'generate_acceptance_criteria', 'context': {'title': 'CSV export'}})
     assert response.status_code == 200

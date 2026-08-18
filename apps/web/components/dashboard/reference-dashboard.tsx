@@ -380,6 +380,7 @@ export function ReferenceDashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [releaseStatusOverride, setReleaseStatusOverride] = useState<{
     contextKey: string;
     status: ReleaseStatus;
@@ -580,10 +581,31 @@ export function ReferenceDashboard() {
     window.setTimeout(() => setShareStatus(""), 2400);
   }
 
-  function updateReleaseStatus(next: ReleaseStatus) {
-    setReleaseStatusOverride({ contextKey, status: next });
-    setStatusMenuOpen(false);
-    notify(copy.statusUpdated);
+  async function updateReleaseStatus(next: ReleaseStatus) {
+    if (statusUpdating) return;
+    setStatusUpdating(true);
+    try {
+      const response = await fetch(
+        `${API}/api/v1/projects/${projectId}/releases/${releaseId}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: next }),
+        },
+      );
+      if (!response.ok) throw new Error("release status unavailable");
+      setReleaseStatusOverride({ contextKey, status: next });
+      setStatusMenuOpen(false);
+      notify(copy.statusUpdated);
+    } catch {
+      notify(
+        locale === "es"
+          ? "No se pudo actualizar el estado del release"
+          : "Release status could not be updated",
+      );
+    } finally {
+      setStatusUpdating(false);
+    }
   }
 
   async function runVerification() {
@@ -742,9 +764,28 @@ export function ReferenceDashboard() {
     notify(copy.portalOpened);
   }
 
-  function sendForAcceptance() {
-    setReleaseSent(true);
-    notify(copy.releaseSent);
+  async function sendForAcceptance() {
+    if (statusUpdating) return;
+    setStatusUpdating(true);
+    try {
+      const response = await fetch(
+        `${API}/api/v1/projects/${projectId}/releases/${releaseId}/send-for-acceptance`,
+        { method: "POST" },
+      );
+      if (!response.ok) throw new Error("release acceptance unavailable");
+      setReleaseStatusOverride({ contextKey, status: "ready" });
+      setReleaseSent(true);
+      setMenuOpen(false);
+      notify(copy.releaseSent);
+    } catch {
+      notify(
+        locale === "es"
+          ? "No se pudo enviar el release a aprobación"
+          : "Release could not be sent for acceptance",
+      );
+    } finally {
+      setStatusUpdating(false);
+    }
   }
 
   return (
