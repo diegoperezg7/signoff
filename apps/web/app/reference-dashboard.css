@@ -228,8 +228,12 @@
 }
 .reference-top-actions {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 22px;
+}
+.reference-top-actions > .reference-notification-wrap {
+  margin-left: auto;
 }
 .reference-search {
   width: 218px;
