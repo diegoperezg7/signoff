@@ -1953,9 +1953,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .reference-breadcrumb > span:first-child,
   .reference-breadcrumb > svg {
     display: none;
+  }
+  .reference-breadcrumb > span:first-child {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .reference-breadcrumb > span:nth-of-type(2) {
     display: block;
@@ -2052,11 +2057,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .reference-breadcrumb > span:first-child,
   .reference-breadcrumb > svg {
     display: none;
   }
-  .reference-breadcrumb > span:nth-of-type(2) {
+  .reference-breadcrumb > span:first-child {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;

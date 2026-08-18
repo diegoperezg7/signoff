@@ -824,8 +824,6 @@ export function ReferenceDashboard() {
             <span>
               {t(activeNav === "dashboard" ? "projects" : labelKeys[activeNav])}
             </span>
-            <ChevronRight size={14} />
-            <span>{currentData.project.name}</span>
           </div>
           <div className="reference-top-actions">
             <label className="reference-search">
