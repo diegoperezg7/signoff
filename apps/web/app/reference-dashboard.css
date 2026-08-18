@@ -15,6 +15,10 @@
   --reference-error: #ff5a5f;
   --reference-progress: #6f82ff;
   --reference-neutral: #adb5c3;
+  --motion-fast: 180ms;
+  --motion-standard: 240ms;
+  --motion-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-spring: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .reference-dashboard,
@@ -39,6 +43,121 @@
 .reference-dashboard button {
   color: inherit;
   cursor: pointer;
+}
+.reference-dashboard button:not(:disabled) {
+  transition: transform var(--motion-fast) var(--motion-enter),
+    background-color var(--motion-fast) var(--motion-enter),
+    border-color var(--motion-fast) var(--motion-enter),
+    color var(--motion-fast) var(--motion-enter),
+    box-shadow var(--motion-fast) var(--motion-enter);
+}
+.reference-dashboard button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes reference-materialize {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+  @keyframes reference-drawer-enter {
+    from {
+      opacity: 0;
+      transform: translateX(18px);
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+      filter: blur(0);
+    }
+  }
+  @keyframes reference-popover-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-5px) scale(0.97);
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+  @keyframes reference-toast-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .reference-release-header,
+  .reference-tabs,
+  .reference-global-surface,
+  .reference-tab-view {
+    animation: reference-materialize 360ms var(--motion-enter) both;
+  }
+  .reference-metric-card {
+    animation: reference-materialize 360ms var(--motion-enter) both;
+  }
+  .reference-metric-card:nth-child(2) { animation-delay: 35ms; }
+  .reference-metric-card:nth-child(3) { animation-delay: 70ms; }
+  .reference-metric-card:nth-child(4) { animation-delay: 105ms; }
+  .reference-main-column > .reference-card,
+  .reference-bottom-grid > .reference-card {
+    animation: reference-materialize 360ms var(--motion-enter) both;
+    animation-delay: 145ms;
+  }
+  .reference-bottom-grid > .reference-card:nth-child(2) {
+    animation-delay: 185ms;
+  }
+  .reference-drawer {
+    animation: reference-drawer-enter 380ms var(--motion-spring) both;
+  }
+  .reference-profile-menu,
+  .reference-action-menu,
+  .reference-status-menu,
+  .reference-notification-panel,
+  .reference-drawer-popover {
+    animation: reference-popover-enter 180ms var(--motion-enter) both;
+    transform-origin: top right;
+  }
+  .reference-profile-menu {
+    transform-origin: bottom right;
+  }
+  .reference-toast {
+    animation: reference-toast-enter 220ms var(--motion-enter) both;
+  }
+  .reference-tabs button::after,
+  .reference-drawer-tabs button::after {
+    transition: transform var(--motion-standard) var(--motion-spring),
+      opacity var(--motion-fast) var(--motion-enter);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reference-spin {
+    animation: none !important;
+  }
 }
 .reference-sidebar {
   min-width: 202px;

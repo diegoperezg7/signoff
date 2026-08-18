@@ -1843,6 +1843,7 @@ function MetricCard({
           : Gauge;
   const coverageChart = useChartSize();
   const miniRingChart = useChartSize();
+  const reducedMotion = useReducedMotion();
   const miniRingData = [
     { name: "verified", value: metric.value, fill: "#1DB954" },
     {
@@ -1901,6 +1902,9 @@ function MetricCard({
                   strokeWidth={1.8}
                   fill="url(#coverageFill)"
                   dot={false}
+                  isAnimationActive={!reducedMotion}
+                  animationDuration={520}
+                  animationEasing="ease-out"
                 />
                 <Tooltip content={() => null} />
               </AreaChart>
@@ -1921,6 +1925,9 @@ function MetricCard({
                 paddingAngle={1}
                 cornerRadius={4}
                 stroke="none"
+                isAnimationActive={!reducedMotion}
+                animationDuration={520}
+                animationEasing="ease-out"
               >
                 <Cell fill={miniRingData[0].fill} />
                 <Cell fill={miniRingData[1].fill} />
@@ -2059,6 +2066,7 @@ function RequirementsCard({
 
 function CoverageBar({ value }: { value: number }) {
   const chart = useChartSize();
+  const reducedMotion = useReducedMotion();
   return (
     <span ref={chart.setElement} className="reference-progress">
       {chart.width > 0 && chart.height > 0 && (
@@ -2076,7 +2084,9 @@ function CoverageBar({ value }: { value: number }) {
             fill="#7069ff"
             radius={[999, 999, 999, 999]}
             background={{ fill: "#202a3b", radius: 999 }}
-            isAnimationActive={false}
+            isAnimationActive={!reducedMotion}
+            animationDuration={420}
+            animationEasing="ease-out"
           />
         </BarChart>
       )}
@@ -2160,6 +2170,7 @@ function VerificationCard({
   t: Translate;
 }) {
   const chart = useChartSize();
+  const reducedMotion = useReducedMotion();
   const chartData = data.map((item) => ({
     ...item,
     fill:
@@ -2195,6 +2206,9 @@ function VerificationCard({
                 paddingAngle={3}
                 cornerRadius={7}
                 stroke="none"
+                isAnimationActive={!reducedMotion}
+                animationDuration={650}
+                animationEasing="ease-out"
               >
                 {chartData.map((entry) => (
                   <Cell key={entry.name} fill={entry.fill} />
@@ -2250,6 +2264,20 @@ function useChartSize() {
   }, [node]);
 
   return { setElement, ...size };
+}
+
+function useReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return reducedMotion;
 }
 
 function RequirementDrawer({
