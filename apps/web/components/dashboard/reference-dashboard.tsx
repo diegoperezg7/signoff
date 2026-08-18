@@ -820,11 +820,6 @@ export function ReferenceDashboard() {
       </aside>
       <main className="reference-main">
         <header className="reference-topbar">
-          <div className="reference-breadcrumb">
-            <span>
-              {t(activeNav === "dashboard" ? "projects" : labelKeys[activeNav])}
-            </span>
-          </div>
           <div className="reference-top-actions">
             <label className="reference-search">
               <Search size={16} />
