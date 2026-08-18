@@ -19,7 +19,7 @@ type DeliveryPack = {
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, options);
-  if (!response.ok) throw new Error(`SDA API request failed (${response.status})`);
+  if (!response.ok) throw new Error(`Signoff API request failed (${response.status})`);
   return response.json() as Promise<T>;
 }
 
@@ -54,7 +54,7 @@ export default function ReviewPage({ params }: { params: Promise<{ token: string
   if (reviewQuery.isPending || !pack) return <main className={`landing review-page reference-${resolvedTheme}`}><div className="eyebrow">{locale === 'es' ? 'PORTAL DE REVISIÓN' : 'CLIENT REVIEW PORTAL'}</div><h1>{locale === 'es' ? 'Cargando delivery pack…' : 'Loading delivery pack…'}</h1></main>;
 
   return <main className={`landing review-page reference-${resolvedTheme}`}>
-    <div className="review-brand"><BrandLockup compact /><span>Software Delivery Assurance</span></div>
+    <div className="review-brand"><BrandLockup compact /><span>Signoff</span></div>
     <div className="eyebrow">{locale === 'es' ? `PORTAL DE REVISIÓN · ${pack.release || 'RELEASE'}` : `CLIENT REVIEW PORTAL · ${pack.release || 'RELEASE'}`}</div>
     <h1>{pack.story.promised}</h1>
     <p className="lede">{locale === 'es' ? `Un resumen transparente preparado para ${pack.project?.client || 'tu cliente'}. Revisa la evidencia y registra tu decisión.` : `A transparent delivery summary prepared for ${pack.project?.client || 'your client'}. Review the evidence and record your decision.`}</p>

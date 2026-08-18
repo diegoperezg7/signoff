@@ -12,5 +12,5 @@ export function BrandLockup({ compact = false, priority = false }: { compact?: b
 export function FullBrandLockup({ priority = false }: { priority?: boolean }) {
   const { resolvedTheme } = useAppPreferences();
   const source = resolvedTheme === 'dark' ? '/brand/signoff-lockup-dark-transparent.png' : '/brand/signoff-lockup-light-transparent.png';
-  return <Image className="marketing-lockup" src={source} alt="Signoff — Software Delivery Assurance" width={910} height={224} priority={priority} />;
+  return <Image className="marketing-lockup" src={source} alt="Signoff" width={910} height={224} priority={priority} />;
 }

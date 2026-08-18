@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from .catalog import ProjectCatalog
-from .db import AcceptanceCriterion, Base, DeliveryRelease, Organization, Project, Requirement, ScopeVersion, User, Membership
+from .db import AcceptanceCriterion, AgentApproval as DbAgentApproval, AgentCheckpoint as DbAgentCheckpoint, AgentPolicy as DbAgentPolicy, AgentRun as DbAgentRun, AgentStep as DbAgentStep, Base, DeliveryRelease, Organization, Project, Requirement, ScopeVersion, User, Membership
 
 
 def stable_uuid(value: str):
@@ -35,7 +35,7 @@ class PostgresRepository:
         with self.session_factory.begin() as session:
             organization = session.scalar(select(Organization).where(Organization.id == stable_uuid("org_demo")))
             if organization is None:
-                organization = Organization(id=stable_uuid("org_demo"), name="SDA Demo Organization")
+                organization = Organization(id=stable_uuid("org_demo"), name="Signoff Demo Organization")
                 session.add(organization)
             owner = session.scalar(select(User).where(User.id == stable_uuid("demo-owner")))
             if owner is None:
@@ -142,6 +142,39 @@ class PostgresRepository:
         if not project or project.get("release_id") != release_id:
             return None
         return self._project_metadata(project_id, organization_id, "delivery_pack") or None
+
+    def save_agent_state(self, run: Any, steps: list[Any], checkpoints: list[Any], approvals: list[Any]) -> None:
+        """Persist a run snapshot transactionally; no prompt or document content is stored."""
+        with self.session_factory.begin() as session:
+            run_id = stable_uuid(run.id)
+            project = self._find_project(session, run.project_id, run.organization_id)
+            if project is None:
+                return
+            record = session.get(DbAgentRun, run_id)
+            if record is None:
+                record = DbAgentRun(id=run_id, organization_id=stable_uuid(run.organization_id), project_id=project.id, agent_id=run.agent_id, provider=run.provider, model=run.model)
+                session.add(record)
+            record.status = run.status
+            record.classification = run.classification
+            record.current_step = run.current_step
+            record.max_steps = run.max_steps
+            record.input_json = {"length": len(run.input)}
+            record.result_json = {"keys": sorted(run.result.keys())}
+            record.error = run.error
+            for step in steps:
+                if session.get(DbAgentStep, stable_uuid(step.id)) is None:
+                    session.add(DbAgentStep(id=stable_uuid(step.id), run_id=run_id, ordinal=step.ordinal, tool=step.tool, status=step.status, input_json=step.input, output_json=step.output if isinstance(step.output, dict) else {"value": step.output}, error=step.error, duration_ms=step.duration_ms))
+            for checkpoint in checkpoints:
+                if session.get(DbAgentCheckpoint, stable_uuid(checkpoint.id)) is None:
+                    session.add(DbAgentCheckpoint(id=stable_uuid(checkpoint.id), run_id=run_id, ordinal=checkpoint.ordinal, state_json=checkpoint.state))
+            for approval in approvals:
+                approval_record = session.get(DbAgentApproval, stable_uuid(approval.id))
+                if approval_record is None:
+                    session.add(DbAgentApproval(id=stable_uuid(approval.id), organization_id=stable_uuid(run.organization_id), run_id=run_id, tool=approval.tool, reason=approval.reason, status=approval.status, decided_by=approval.decided_by, comment=approval.comment))
+                else:
+                    approval_record.status = approval.status
+                    approval_record.decided_by = approval.decided_by
+                    approval_record.comment = approval.comment
 
     @staticmethod
     def _project_dict(project: Project) -> dict[str, Any]:

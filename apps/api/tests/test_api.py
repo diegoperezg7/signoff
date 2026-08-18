@@ -95,6 +95,42 @@ def test_ai_proposal_requires_approval_and_is_traced():
     assert client.get('/api/v1/projects/project_demo/ai/runs').json()
 
 
+def test_contextual_agents_use_allowlisted_tools_and_keep_criteria_as_draft():
+    catalog = client.get('/api/v1/agents').json()
+    assert {item['id'] for item in catalog['items']} == {
+        'delivery-analyst', 'requirements-coach', 'verification-planner', 'change-radar',
+        'agreement-analyst', 'qa-explorer', 'evidence-curator', 'acceptance-assistant'
+    }
+    response = client.post('/api/v1/projects/project_demo/agents/run', json={
+        'agent_id': 'requirements-coach',
+        'requirement_id': 'REQ-006',
+        'input': 'Make this requirement easier to verify',
+    })
+    assert response.status_code == 200
+    run = response.json()
+    assert run['status'] == 'requires_approval'
+    assert run['requires_approval'] is True
+    assert [item['tool'] for item in run['tool_calls']] == [
+        'inspect_requirement', 'analyze_requirement', 'generate_acceptance_criteria'
+    ]
+    assert run['result']['generate_acceptance_criteria']['status'] == 'draft'
+    approved = client.post(f"/api/v1/ai/proposals/{run['proposal_id']}/approve")
+    assert approved.status_code == 200
+    assert approved.json()['status'] == 'approved'
+
+
+def test_delivery_agent_returns_readiness_and_attention_trace():
+    response = client.post('/api/v1/projects/project_demo/agents/run', json={
+        'agent_id': 'delivery-analyst',
+        'input': 'What is blocking client acceptance?',
+    })
+    assert response.status_code == 200
+    run = response.json()
+    assert run['status'] == 'completed'
+    assert run['result']['get_delivery_readiness']['total_requirements'] == 12
+    assert run['result']['list_attention_items']
+
+
 def test_functional_endpoints_follow_the_active_project():
     acme_requirements = client.get('/api/v1/projects/project_acme/requirements').json()
     customer_requirements = client.get('/api/v1/projects/project_demo/requirements').json()

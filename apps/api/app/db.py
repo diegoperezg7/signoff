@@ -266,3 +266,60 @@ class LLMRun(Timestamped, Base):
     estimated_cost: Mapped[float] = mapped_column(default=0)
     duration_ms: Mapped[int] = mapped_column(default=0)
     status: Mapped[str] = mapped_column(String(32), default="completed")
+
+
+class AgentPolicy(Timestamped, Base):
+    __tablename__ = "agent_policies"
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), primary_key=True)
+    mode: Mapped[str] = mapped_column(String(32), default="max_autonomy")
+    config_json: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class AgentRun(Timestamped, Base):
+    __tablename__ = "agent_runs"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[UUID] = mapped_column(ForeignKey("projects.id"), index=True)
+    agent_id: Mapped[str] = mapped_column(String(80))
+    status: Mapped[str] = mapped_column(String(40), default="queued")
+    classification: Mapped[str] = mapped_column(String(40), default="CONFIDENTIAL")
+    provider: Mapped[str] = mapped_column(String(80))
+    model: Mapped[str] = mapped_column(String(120))
+    current_step: Mapped[int] = mapped_column(default=0)
+    max_steps: Mapped[int] = mapped_column(default=12)
+    input_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    result_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class AgentStep(Timestamped, Base):
+    __tablename__ = "agent_steps"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    run_id: Mapped[UUID] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    ordinal: Mapped[int] = mapped_column(default=0)
+    tool: Mapped[str] = mapped_column(String(100))
+    status: Mapped[str] = mapped_column(String(32), default="queued")
+    input_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    output_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    duration_ms: Mapped[int] = mapped_column(default=0)
+
+
+class AgentCheckpoint(Timestamped, Base):
+    __tablename__ = "agent_checkpoints"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    run_id: Mapped[UUID] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    ordinal: Mapped[int] = mapped_column(default=0)
+    state_json: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class AgentApproval(Timestamped, Base):
+    __tablename__ = "agent_approvals"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    run_id: Mapped[UUID] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    tool: Mapped[str] = mapped_column(String(100))
+    reason: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32), default="pending")
+    decided_by: Mapped[Optional[str]] = mapped_column(String(160), nullable=True)
+    comment: Mapped[str] = mapped_column(Text, default="")

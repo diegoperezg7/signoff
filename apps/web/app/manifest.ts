@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Signoff — Software Delivery Assurance',
+    name: 'Signoff — Software delivery assurance',
     short_name: 'Signoff',
     description: 'From agreement to acceptance.',
     start_url: '/dashboard',

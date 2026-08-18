@@ -1,6 +1,6 @@
 # Architecture
 
-SDA has one project/release contract and two adapters: `ProjectCatalog`/`InMemoryRepository` for deterministic mock mode and `PostgresRepository` for production persistence. The API projection is `GET /api/v1/projects/{project_id}/releases/{release_id}/dashboard`; the old reference endpoint remains only as a compatibility alias. New project reads receive the organization from the authenticated user, never from a client-supplied tenant filter.
+Signoff has one project/release contract and two adapters: `ProjectCatalog`/`InMemoryRepository` for deterministic mock mode and `PostgresRepository` for production persistence. The API projection is `GET /api/v1/projects/{project_id}/releases/{release_id}/dashboard`; the old reference endpoint remains only as a compatibility alias. New project reads receive the organization from the authenticated user, never from a client-supplied tenant filter.
 
 The web workspace uses the same shell for both demo projects. `/` is the public landing, `/dashboard` is the active release workspace and the sidebar routes are global projections over the same project/release context. Release tabs are the only release-specific navigation.
 

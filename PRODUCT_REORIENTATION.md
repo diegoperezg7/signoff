@@ -2,11 +2,11 @@
 
 ## Current state
 
-SDA has a consolidated SaaS workspace: a Next.js landing and shared dashboard shell, FastAPI project/release projections, two deterministic demo projects, requirements, evidence, Change Radar, Delivery Pack and tokenized client review routes. The legacy dashboard was removed from `apps/web/app/page.tsx`; the landing is now the only `/` experience. Mock mode uses an in-memory catalog, while production mode can initialize the PostgreSQL repository.
+Signoff has a consolidated SaaS workspace: a Next.js landing and shared dashboard shell, FastAPI project/release projections, two deterministic demo projects, requirements, evidence, Change Radar, Delivery Pack and tokenized client review routes. The legacy dashboard was removed from `apps/web/app/page.tsx`; the landing is now the only `/` experience. Mock mode uses an in-memory catalog, while production mode can initialize the PostgreSQL repository.
 
 ## Product direction
 
-SDA is the operating system for proving software delivery. Its core trace is:
+Signoff is the operating system for proving software delivery. Its core trace is:
 
 `Agreement → Build → Change → Verify → Evidence → Accept`
 

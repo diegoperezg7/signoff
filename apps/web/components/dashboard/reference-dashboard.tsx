@@ -13,6 +13,7 @@ import {
 } from "react";
 import {
   Bell,
+  ArrowUpRight,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -65,6 +66,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { BrandLockup } from "../brand-lockup";
+import { AgentDock } from "../agents/agent-dock";
 import {
   useAppPreferences,
   type Locale,
@@ -453,7 +455,7 @@ export function ReferenceDashboard() {
         if (!cancelled)
           setLoadError(
             error instanceof Error && error.message.includes("(5")
-              ? "SDA API is unavailable right now. Check the API service and try again."
+              ? "Signoff API is unavailable right now. Check the API service and try again."
               : "This workspace is not available from the current API. Restart the API service and try again.",
           );
       });
@@ -959,6 +961,33 @@ export function ReferenceDashboard() {
             </button>
           </div>
         </header>
+        {activeNav === "dashboard" && (
+          <div className="reference-context-strip" aria-label={isEs ? "Contexto del release" : "Release context"}>
+            <div className="reference-context-lead">
+              <span className="reference-context-kicker">{isEs ? "CONTEXTO ACTIVO" : "ACTIVE CONTEXT"}</span>
+              <strong>{currentData.project.client} · {currentData.project.release}</strong>
+            </div>
+            <div className="reference-context-item">
+              <span className="context-indicator context-indicator-error" />
+              <span>
+                <small>{isEs ? "Atención" : "Attention"}</small>
+                <strong>{isEs ? "11 verificaciones fallidas" : "11 failed verifications"}</strong>
+              </span>
+            </div>
+            <div className="reference-context-item">
+              <span className="context-indicator context-indicator-warning" />
+              <span>
+                <small>{isEs ? "Siguiente decisión" : "Next decision"}</small>
+                <strong>{isEs ? "Aprobación del cliente" : "Client sign-off"}</strong>
+              </span>
+            </div>
+            <button className="reference-context-action" onClick={() => selectTab("verification")}>
+              {isEs ? "Revisar hallazgos" : "Review findings"}
+              <ArrowUpRight size={15} />
+            </button>
+            <AgentDock api={API} projectId={projectId} requirementId={selectedId} locale={locale} />
+          </div>
+        )}
         {activeNav === "dashboard" ? (
           <>
             <section className="reference-release-header">
@@ -1209,7 +1238,7 @@ type CatalogRelease = {
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`SDA API returned ${response.status}`);
+  if (!response.ok) throw new Error(`Signoff API returned ${response.status}`);
   return response.json() as Promise<T>;
 }
 

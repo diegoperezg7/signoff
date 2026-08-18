@@ -1,6 +1,6 @@
 # AI provider policy
 
-SDA uses an AI gateway. API keys are server-side only. Every request records
+Signoff uses an AI gateway. API keys are server-side only. Every request records
 provider, model, policy snapshot, classification, consent state, latency, token
 metadata and outcome in `LLMRun`; prompts and raw responses are not logged by
 default.

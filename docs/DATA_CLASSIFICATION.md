@@ -1,6 +1,6 @@
 # Data classification
 
-SDA treats every uploaded agreement as `CONFIDENTIAL` by default. Classification
+Signoff treats every uploaded agreement as `CONFIDENTIAL` by default. Classification
 is a safety control, not a legal determination.
 
 | Level | Default AI behavior |
