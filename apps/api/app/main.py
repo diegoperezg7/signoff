@@ -6,21 +6,22 @@ import os
 import time
 import base64
 import httpx
-from datetime import datetime, timezone
+import secrets
+from datetime import datetime, timedelta, timezone
 from typing import Any, Literal, Optional
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field, field_validator
 from .catalog import ACME_PROJECT_ID, ACME_RELEASE_ID, CUSTOMER_PROJECT_ID, CUSTOMER_RELEASE_ID, ProjectCatalog
 from .agents import AgentId, agent_catalog, build_plan, get_agent
 from .domain import BugChangeAssessment, EvidenceRelationship, calculate_readiness
 from .file_inspector import inspect_file
-from .providers import MockLLMProvider as ContractMockLLMProvider, OpenAIProvider
+from .providers import MockLLMProvider as ContractMockLLMProvider, OpenAIProvider, OpenRouterProvider
 from .persistence import PostgresRepository
-from .auth import CurrentUser, current_user, require_role
+from .auth import CurrentUser, current_user, require_role, set_membership_validator
 from .storage import LocalStorageProvider, S3StorageProvider
 from .jobs import InlineJobRunner
 from .agent_runtime import AgentApproval, AgentCheckpoint, AgentPolicy, AgentRunRecord, AgentStep, ToolRegistry, default_policy
@@ -88,6 +89,16 @@ class RunRequest(BaseModel):
 class ReviewRequest(BaseModel):
     decision: Literal["accepted", "rejected", "revision_requested"]
     comment: str = ""
+    guest_session: Optional[str] = None
+
+
+class ReviewOtpRequest(BaseModel):
+    email: str = Field(min_length=5, max_length=320)
+
+
+class ReviewOtpVerification(BaseModel):
+    email: str = Field(min_length=5, max_length=320)
+    code: str = Field(min_length=6, max_length=6)
 
 
 class ScopeVersionRequest(BaseModel):
@@ -130,6 +141,8 @@ class AITaskRequest(BaseModel):
     classification: DataClassification = DataClassification.CONFIDENTIAL
     consent: bool = False
     redact_pii: bool = True
+    document_id: Optional[str] = None
+    provider_route: Optional[str] = None
 
     @field_validator("classification", mode="before")
     @classmethod
@@ -148,6 +161,8 @@ class AgentRunRequest(BaseModel):
     redact_pii: bool = True
     target_url: str = "http://localhost:3000/dashboard"
     routes: list[str] = Field(default_factory=list)
+    document_id: Optional[str] = None
+    provider_route: Optional[str] = None
 
     @field_validator("classification", mode="before")
     @classmethod
@@ -165,6 +180,8 @@ class AgentDispatchRequest(BaseModel):
     redact_pii: bool = True
     target_url: str = "http://localhost:3000/dashboard"
     routes: list[str] = Field(default_factory=list)
+    document_id: Optional[str] = None
+    provider_route: Optional[str] = None
 
     @field_validator("classification", mode="before")
     @classmethod
@@ -180,6 +197,8 @@ class IntelligenceQuestionRequest(BaseModel):
     classification: DataClassification = DataClassification.CONFIDENTIAL
     consent: bool = False
     redact_pii: bool = True
+    document_id: Optional[str] = None
+    provider_route: Optional[str] = None
 
     @field_validator("classification", mode="before")
     @classmethod
@@ -224,6 +243,22 @@ class AgentPolicyUpdateRequest(BaseModel):
 class SendAgentAlertRequest(BaseModel):
     to: str = Field(min_length=3, max_length=320)
     action_url: str = "http://localhost:3000/dashboard"
+
+
+class AIConsentRequest(BaseModel):
+    document_id: str = Field(min_length=3, max_length=240)
+    provider: str = Field(min_length=2, max_length=80)
+    model_or_route: str = Field(min_length=2, max_length=160)
+    classification: DataClassification = DataClassification.CONFIDENTIAL
+    purpose: str = Field(min_length=3, max_length=240)
+    expires_in_days: int = Field(default=30, ge=1, le=365)
+
+    @field_validator("classification", mode="before")
+    @classmethod
+    def parse_classification(cls, value: Any) -> DataClassification:
+        if isinstance(value, str):
+            return DataClassification[value.upper()]
+        return value
 
 
 class AIProposal(BaseModel):
@@ -280,6 +315,10 @@ class DemoStore:
         self.agent_approvals: dict[str, AgentApproval] = {}
         self.agent_policies: dict[str, AgentPolicy] = {}
         self.email_deliveries: list[dict[str, Any]] = []
+        self.ai_consents: dict[str, dict[str, Any]] = {}
+        self.review_challenges: dict[str, dict[str, Any]] = {}
+        self.review_sessions: dict[str, dict[str, Any]] = {}
+        self.document_records: dict[str, dict[str, Any]] = {}
 
 
 store = DemoStore()
@@ -298,11 +337,63 @@ app = FastAPI(title="Signoff API", version="0.1.0", description="Signoff softwar
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 
+@app.middleware("http")
+async def security_headers_and_api_guard(request: Request, call_next):
+    path = request.url.path
+    public_api = path.startswith("/api/v1/review/") or path.startswith("/api/v1/evidence/")
+    production = os.getenv("MOCK_MODE", "true").lower() != "true"
+    authorization = request.headers.get("authorization", "")
+    if production and path.startswith("/api/v1/") and not public_api and request.method != "OPTIONS" and not authorization.lower().startswith("bearer "):
+        return JSONResponse(status_code=401, content={"detail": "Authentication required"})
+    # Resolve project URLs at the HTTP boundary as well as inside handlers.
+    # This prevents a handler that accidentally uses a demo default from
+    # disclosing another tenant's project projection.
+    if production and path.startswith("/api/v1/projects/") and not public_api and request.method != "OPTIONS":
+        try:
+            user = current_user(authorization)
+            project_id = path.split("/", 5)[4]
+            if not catalog.get_project(project_id, user.organization_id):
+                return JSONResponse(status_code=404, content={"detail": "Project not found"})
+        except HTTPException as exc:
+            return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if request.url.scheme == "https" or os.getenv("MOCK_MODE", "true").lower() != "true":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+
 def project_or_404(project_id: str) -> dict:
     project = catalog.get_project(project_id)
     if not project:
         raise HTTPException(404, "Project not found")
     return project
+
+
+def _review_record(token: str) -> dict[str, Any]:
+    """Resolve server-side review metadata without persisting raw guest tokens."""
+    configured_demo = os.getenv("SIGNOFF_REVIEW_TOKEN_DEMO", "demo-review-token" if os.getenv("MOCK_MODE", "true").lower() == "true" else "")
+    configured_acme = os.getenv("SIGNOFF_REVIEW_TOKEN_ACME", "acme-review-token" if os.getenv("MOCK_MODE", "true").lower() == "true" else "")
+    if configured_demo and secrets.compare_digest(token, configured_demo):
+        return {"project_id": CUSTOMER_PROJECT_ID, "release_id": CUSTOMER_RELEASE_ID, "email": "client@northstar.example"}
+    if configured_acme and secrets.compare_digest(token, configured_acme):
+        return {"project_id": ACME_PROJECT_ID, "release_id": ACME_RELEASE_ID, "email": "reviewer@acme.example"}
+    raise HTTPException(404, "Review link not found or expired")
+
+
+def _guest_session_valid(token: str, session_token: Optional[str]) -> bool:
+    if os.getenv("MOCK_MODE", "true").lower() == "true":
+        return True
+    if not session_token:
+        return False
+    digest = hashlib.sha256(session_token.encode()).hexdigest()
+    record = store.review_sessions.get(digest)
+    if not record or record["token_hash"] != hashlib.sha256(token.encode()).hexdigest():
+        return False
+    return datetime.fromisoformat(record["expires_at"]) > datetime.now(timezone.utc)
 
 
 def release_id_for(project_id: str) -> str:
@@ -376,6 +467,7 @@ def configure_persistence() -> None:
         repository.initialize(catalog)
         catalog = repository  # type: ignore[assignment]
         agent_repository = repository
+        set_membership_validator(repository.membership_role)
     except Exception as exc:
         raise RuntimeError(f"SDA persistence could not start: {exc}") from exc
 
@@ -463,12 +555,43 @@ def reference_dashboard() -> dict:
 def llm_provider() -> Any:
     if os.getenv("MOCK_MODE", "true").lower() == "true":
         return ContractMockLLMProvider()
+    if os.getenv("AI_PROVIDER", "openai").lower() == "openrouter":
+        return OpenRouterProvider()
     return OpenAIProvider()
 
 
 def audit_event(user: CurrentUser, event_type: str, **payload: Any) -> None:
     """Store metadata-only audit records; document content never belongs here."""
     store.audit_events.append({"organization_id": user.organization_id, "actor_id": user.id, "event": event_type, "created_at": now(), **payload})
+
+
+def _consent_key(project_id: str, document_id: str, provider: str, model_or_route: str) -> str:
+    return f"{project_id}:{document_id}:{provider.lower()}:{model_or_route}"
+
+
+def _valid_document_consent(project_id: str, document_id: str | None, user: CurrentUser, provider: Any, requested_classification: DataClassification, requested_route: str | None = None) -> bool:
+    if os.getenv("MOCK_MODE", "true").lower() == "true":
+        return True
+    if not document_id:
+        return False
+    provider_name = getattr(provider, "provider_name", provider.__class__.__name__).lower().replace("provider", "")
+    model = requested_route or getattr(provider, "model", "unknown")
+    record = store.ai_consents.get(_consent_key(project_id, document_id, provider_name, model))
+    if record is None and agent_repository is not None and hasattr(agent_repository, "list_ai_consents"):
+        record = next((item for item in agent_repository.list_ai_consents(project_id, user.organization_id) if item["document_id"] == document_id and item["provider"] == provider_name and item["model_or_route"] == model), None)
+    if not record or record.get("organization_id") != user.organization_id or record.get("revoked_at"):
+        return False
+    if DataClassification[record.get("classification", "CONFIDENTIAL")] < requested_classification:
+        return False
+    return record.get("expires_at", "") > now()
+
+
+def _assert_ai_consent(project_id: str, document_id: str | None, user: CurrentUser, provider: Any, classification: DataClassification, consent: bool, provider_route: str | None = None) -> bool:
+    granted = consent or _valid_document_consent(project_id, document_id, user, provider, classification, provider_route)
+    if os.getenv("MOCK_MODE", "true").lower() != "true" and classification >= DataClassification.CONFIDENTIAL and not granted:
+        raise HTTPException(428, "A valid consent for this document and AI route is required")
+    privacy_policy.assert_allowed(provider, classification, granted)
+    return granted
 
 
 def persist_agent_snapshot(run: AgentRunRecord) -> None:
@@ -548,7 +671,7 @@ def select_agent_for_input(user_input: str) -> AgentId:
 def dispatch_agent(project_id: str, payload: AgentDispatchRequest, user: CurrentUser = Depends(current_user)) -> AgentRunResponse:
     agent_id = select_agent_for_input(payload.input)
     audit_event(user, "ai_agent_dispatched", project_id=project_id, agent_id=agent_id)
-    return run_agent(project_id, AgentRunRequest(agent_id=agent_id, input=payload.input, requirement_id=payload.requirement_id, classification=payload.classification, consent=payload.consent, redact_pii=payload.redact_pii, target_url=payload.target_url, routes=payload.routes), user)
+    return run_agent(project_id, AgentRunRequest(agent_id=agent_id, input=payload.input, requirement_id=payload.requirement_id, classification=payload.classification, consent=payload.consent, redact_pii=payload.redact_pii, target_url=payload.target_url, routes=payload.routes, document_id=payload.document_id, provider_route=payload.provider_route), user)
 
 
 @app.post("/api/v1/projects/{project_id}/intelligence/ask")
@@ -556,7 +679,7 @@ def ask_project_intelligence(project_id: str, payload: IntelligenceQuestionReque
     if not catalog.get_project(project_id, user.organization_id):
         raise HTTPException(404, "Project not found")
     provider = llm_provider()
-    privacy_policy.assert_allowed(provider, payload.classification, payload.consent)
+    _assert_ai_consent(project_id, payload.document_id, user, provider, payload.classification, payload.consent, payload.provider_route)
     question = _redact_agent_value(payload.question, payload.redact_pii and privacy_policy.redact_before_ai)
     requirements = canonical_requirements(project_id)
     readiness = calculate_readiness(
@@ -590,7 +713,7 @@ def run_agent(project_id: str, payload: AgentRunRequest, user: CurrentUser = Dep
         raise HTTPException(404, "Project not found")
     agent = get_agent(payload.agent_id)
     provider = llm_provider()
-    privacy_policy.assert_allowed(provider, payload.classification, payload.consent)
+    _assert_ai_consent(project_id, payload.document_id, user, provider, payload.classification, payload.consent, payload.provider_route)
     policy = store.agent_policies.setdefault(user.organization_id, default_policy(user.organization_id))
     started = time.perf_counter()
     safe_input = _redact_agent_value(payload.input, payload.redact_pii and privacy_policy.redact_before_ai)
@@ -831,7 +954,7 @@ def run_ai_task(project_id: str, payload: AITaskRequest, user: CurrentUser = Dep
     if not catalog.get_project(project_id, user.organization_id):
         raise HTTPException(404, "Project not found")
     provider = llm_provider()
-    privacy_policy.assert_allowed(provider, payload.classification, payload.consent)
+    _assert_ai_consent(project_id, payload.document_id, user, provider, payload.classification, payload.consent, payload.provider_route)
     started = time.perf_counter()
     task_context = dict(payload.context)
     redaction_categories: list[str] = []
@@ -904,13 +1027,100 @@ def project_privacy_policy(project_id: str, user: CurrentUser = Depends(current_
     }
 
 
+@app.get("/api/v1/projects/{project_id}/ai/consents")
+def list_ai_consents(project_id: str, user: CurrentUser = Depends(current_user)) -> dict[str, Any]:
+    if not catalog.get_project(project_id, user.organization_id):
+        raise HTTPException(404, "Project not found")
+    if agent_repository is not None and hasattr(agent_repository, "list_ai_consents"):
+        return {"items": agent_repository.list_ai_consents(project_id, user.organization_id)}
+    return {"items": [item for item in store.ai_consents.values() if item["project_id"] == project_id and item["organization_id"] == user.organization_id and not item.get("revoked_at")]}
+
+
+@app.post("/api/v1/projects/{project_id}/ai/consents")
+def grant_ai_consent(project_id: str, payload: AIConsentRequest, user: CurrentUser = Depends(current_user)) -> dict[str, Any]:
+    require_role(user, "owner", "admin", "member")
+    if not catalog.get_project(project_id, user.organization_id):
+        raise HTTPException(404, "Project not found")
+    if payload.classification < DataClassification.CONFIDENTIAL:
+        raise HTTPException(422, "Document consent is only needed for confidential processing")
+    provider = payload.provider.lower().replace("provider", "")
+    record = {
+        "id": f"consent_{secrets.token_urlsafe(12)}",
+        "organization_id": user.organization_id,
+        "project_id": project_id,
+        "document_id": payload.document_id,
+        "provider": provider,
+        "model_or_route": payload.model_or_route,
+        "classification": payload.classification.name,
+        "purpose": payload.purpose,
+        "granted_by": user.id,
+        "granted_at": now(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=payload.expires_in_days)).isoformat(),
+        "revoked_at": None,
+    }
+    store.ai_consents[_consent_key(project_id, payload.document_id, provider, payload.model_or_route)] = record
+    if agent_repository is not None and hasattr(agent_repository, "save_ai_consent"):
+        agent_repository.save_ai_consent(record)
+    audit_event(user, "ai_document_consent_granted", project_id=project_id, document_id=payload.document_id, provider=provider, model_or_route=payload.model_or_route, classification=payload.classification.name)
+    return record
+
+
+@app.delete("/api/v1/projects/{project_id}/ai/consents/{document_id}")
+def revoke_ai_consent(project_id: str, document_id: str, user: CurrentUser = Depends(current_user)) -> dict[str, Any]:
+    require_role(user, "owner", "admin", "member")
+    revoked = agent_repository.revoke_ai_consent(project_id, document_id, user.organization_id) if agent_repository is not None and hasattr(agent_repository, "revoke_ai_consent") else 0
+    for item in store.ai_consents.values():
+        if item["project_id"] == project_id and item["document_id"] == document_id and item["organization_id"] == user.organization_id and not item.get("revoked_at"):
+            item["revoked_at"] = now()
+            revoked += 1
+    if not revoked:
+        raise HTTPException(404, "AI consent not found")
+    audit_event(user, "ai_document_consent_revoked", project_id=project_id, document_id=document_id, revoked=revoked)
+    return {"status": "revoked", "document_id": document_id, "revoked": revoked}
+
+
+@app.get("/api/v1/projects/{project_id}/privacy/retention")
+def privacy_retention(project_id: str, user: CurrentUser = Depends(current_user)) -> dict[str, Any]:
+    if not catalog.get_project(project_id, user.organization_id):
+        raise HTTPException(404, "Project not found")
+    return {"document_retention_days": int(os.getenv("SDA_DOCUMENT_RETENTION_DAYS", "365")), "evidence_retention_days": int(os.getenv("SDA_EVIDENCE_RETENTION_DAYS", "365")), "portal_link_days": int(os.getenv("SDA_PORTAL_LINK_RETENTION_DAYS", "7")), "llm_metadata_retention_days": int(os.getenv("SDA_LLM_METADATA_RETENTION_DAYS", "730")), "raw_prompts_stored": False}
+
+
+@app.delete("/api/v1/projects/{project_id}/documents/{document_id}")
+def delete_document(project_id: str, document_id: str, user: CurrentUser = Depends(current_user)) -> dict[str, Any]:
+    require_role(user, "owner", "admin")
+    if not catalog.get_project(project_id, user.organization_id):
+        raise HTTPException(404, "Project not found")
+    record = store.document_records.get(document_id)
+    if not record:
+        raise HTTPException(404, "Document not found")
+    # Only metadata is retained in the audit event; content and the raw name
+    # are deliberately absent from it.
+    storage_key = record.get("storage_key")
+    if storage_key:
+        storage.delete_object(storage_key)
+    store.document_records.pop(document_id, None)
+    for key, consent in list(store.ai_consents.items()):
+        if consent.get("document_id") == document_id:
+            consent["revoked_at"] = now()
+            store.ai_consents[key] = consent
+    audit_event(user, "document_erased", project_id=project_id, document_id=document_id)
+    return {"status": "erased", "document_id": document_id}
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "mock_mode": os.getenv("MOCK_MODE", "true").lower() == "true", "time": now()}
 
 
 @app.get("/api/v1/dashboard")
-def dashboard() -> dict:
+def dashboard(user: CurrentUser = Depends(current_user)) -> dict:
+    if os.getenv("MOCK_MODE", "true").lower() != "true":
+        projects = catalog.list_projects(user.organization_id)
+        if not projects:
+            raise HTTPException(404, "No projects available in this organization")
+        project = projects[0]
+        return {"project": project, "counts": {}, "scope_changes": 0, "attention": [], "requirements": project.get("requirements_count", 0)}
     counts = {state: sum(r.status == state for r in store.requirements) for state in ["demonstrated", "partially_demonstrated", "not_demonstrated", "manual_review_required"]}
     return {"project": store.project, "counts": counts, "scope_changes": len(store.changes), "attention": ["Performance budget has no passing run", "Warehouse manager role awaits approval", "Email alerts are partially demonstrated"], "requirements": len(store.requirements)}
 
@@ -964,10 +1174,24 @@ async def import_scope(file: UploadFile = File(...)) -> dict:
     allowed = {"application/pdf", "text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
     if file.content_type not in allowed:
         raise HTTPException(400, "Only PDF, DOCX and TXT files are supported")
-    content = await file.read()
+    filename = os.path.basename(file.filename or "scope-document")
+    if filename != (file.filename or "") or filename.startswith("."):
+        raise HTTPException(400, "Unsafe filename")
+    content = await file.read(10_000_001)
     if len(content) > 10_000_000:
         raise HTTPException(413, "File exceeds 10MB limit")
-    return {"status": "draft_ready", "filename": file.filename, "bytes": len(content), "version": "Scope v2 (draft)", "message": "Mock extraction complete. Review the suggested requirements before confirming."}
+    if not content:
+        raise HTTPException(400, "File is empty")
+    if file.content_type == "application/pdf" and not content.startswith(b"%PDF"):
+        raise HTTPException(400, "File content does not match PDF format")
+    if file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        if not content.startswith(b"PK") or b"vbaProject.bin" in content:
+            raise HTTPException(400, "DOCX must be a valid macro-free document")
+    if file.content_type == "text/plain" and b"\x00" in content[:4096]:
+        raise HTTPException(400, "Text file contains binary content")
+    document_id = f"doc_{secrets.token_urlsafe(12)}"
+    store.document_records[document_id] = {"id": document_id, "filename": filename, "sha256": hashlib.sha256(content).hexdigest(), "bytes": len(content), "content_type": file.content_type, "status": "quarantined", "created_at": now(), "retention_days": int(os.getenv("SDA_DOCUMENT_RETENTION_DAYS", "365"))}
+    return {"status": "draft_ready", "document_id": document_id, "filename": filename, "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(), "version": "Scope v2 (draft)", "message": "Mock extraction complete. Review the suggested requirements before confirming."}
 
 
 @app.get("/api/v1/projects/{project_id}/changes", response_model=list[ChangeRequest])
@@ -1069,10 +1293,11 @@ def delivery_pack(project_id: str) -> dict:
 
 @app.post("/api/v1/review/{token}")
 def review(token: str, payload: ReviewRequest) -> dict:
-    if token not in {"demo-review-token", "acme-review-token"}:
-        raise HTTPException(404, "Review link not found or expired")
-    project_id = CUSTOMER_PROJECT_ID if token == "demo-review-token" else ACME_PROJECT_ID
-    item = {"token": token, "project_id": project_id, "release_id": release_id_for(project_id), **payload.model_dump(), "created_at": now()}
+    access = _review_record(token)
+    if not _guest_session_valid(token, payload.guest_session):
+        raise HTTPException(401, "Guest verification required")
+    project_id = access["project_id"]
+    item = {"token_hash": hashlib.sha256(token.encode()).hexdigest(), "project_id": project_id, "release_id": access["release_id"], **payload.model_dump(exclude={"guest_session"}), "created_at": now()}
     store.reviews.append(item)
     if project_id == CUSTOMER_PROJECT_ID:
         store.project["status"] = "accepted" if payload.decision == "accepted" else "on_hold" if payload.decision == "rejected" else "pending_acceptance"
@@ -1080,8 +1305,42 @@ def review(token: str, payload: ReviewRequest) -> dict:
     return {"status": "recorded", "review": item}
 
 
+@app.post("/api/v1/review/{token}/request-otp")
+def request_review_otp(token: str, payload: ReviewOtpRequest) -> dict[str, Any]:
+    access = _review_record(token)
+    if os.getenv("MOCK_MODE", "true").lower() == "true":
+        return {"status": "sent", "expires_in_seconds": 600, "mock_code": "123456"}
+    if payload.email.lower() != access["email"].lower():
+        return {"status": "sent", "expires_in_seconds": 600}
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    challenge_key = hashlib.sha256(f"{token}:{payload.email.lower()}".encode()).hexdigest()
+    store.review_challenges[challenge_key] = {"code_hash": hashlib.sha256(code.encode()).hexdigest(), "token_hash": hashlib.sha256(token.encode()).hexdigest(), "email": payload.email.lower(), "attempts": 0, "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()}
+    email_delivery = email_provider.send_review_otp(to=payload.email, code=code, release_id=access["release_id"])
+    return {"status": "sent", "expires_in_seconds": 600, "delivery": email_delivery}
+
+
+@app.post("/api/v1/review/{token}/verify-otp")
+def verify_review_otp(token: str, payload: ReviewOtpVerification) -> dict[str, Any]:
+    access = _review_record(token)
+    if os.getenv("MOCK_MODE", "true").lower() == "true" and payload.code == "123456":
+        return {"status": "verified", "guest_session": "mock-guest-session"}
+    challenge_key = hashlib.sha256(f"{token}:{payload.email.lower()}".encode()).hexdigest()
+    challenge = store.review_challenges.get(challenge_key)
+    if not challenge or challenge["token_hash"] != hashlib.sha256(token.encode()).hexdigest() or datetime.fromisoformat(challenge["expires_at"]) <= datetime.now(timezone.utc):
+        raise HTTPException(401, "Invalid or expired verification code")
+    challenge["attempts"] += 1
+    if challenge["attempts"] > 5 or not secrets.compare_digest(challenge["code_hash"], hashlib.sha256(payload.code.encode()).hexdigest()):
+        raise HTTPException(401, "Invalid or expired verification code")
+    raw_session = secrets.token_urlsafe(32)
+    store.review_sessions[hashlib.sha256(raw_session.encode()).hexdigest()] = {"token_hash": hashlib.sha256(token.encode()).hexdigest(), "expires_at": (datetime.now(timezone.utc) + timedelta(hours=8)).isoformat(), "email": access["email"]}
+    return {"status": "verified", "guest_session": raw_session, "expires_in_seconds": 28800}
+
+
 @app.get("/api/v1/review/{token}")
-def review_pack(token: str) -> dict:
+def review_pack(token: str, guest_session: Optional[str] = None) -> dict:
+    _review_record(token)
+    if not _guest_session_valid(token, guest_session):
+        raise HTTPException(401, "Guest verification required")
     if token == "acme-review-token":
         projection = catalog.dashboard(ACME_PROJECT_ID, ACME_RELEASE_ID)
         if projection is None:
@@ -1113,7 +1372,8 @@ def review_pack(token: str) -> dict:
 
 
 @app.get("/api/v1/internal/costs")
-def costs() -> dict:
+def costs(user: CurrentUser = Depends(current_user)) -> dict:
+    require_role(user, "owner", "admin")
     input_tokens = sum(item["input_tokens"] for item in store.llm_runs)
     output_tokens = sum(item["output_tokens"] for item in store.llm_runs)
     estimated_cost = round(sum(item["estimated_cost"] for item in store.llm_runs) + 0.18, 4)

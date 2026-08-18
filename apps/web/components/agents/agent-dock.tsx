@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Check, ChevronRight, LoaderCircle, ShieldCheck, Sparkles, Wrench, X } from "lucide-react";
+import { Check, ChevronRight, LoaderCircle, ShieldCheck, Sparkles, Wrench, X } from "lucide-react";
 
 type Agent = { id: string; name: string; description: string; tools: string[]; accent: string };
 type AgentRun = {
@@ -129,7 +129,7 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
           <div className="reference-agent-list">
             {agents.map((agent) => (
               <button key={agent.id} className={`reference-agent-option${agent.id === agentId ? " is-selected" : ""}`} onClick={() => { setAgentId(agent.id); setRun(null); }}>
-                <span className={`reference-agent-icon agent-${agent.accent}`}><Bot size={16} /></span>
+                <span className={`reference-agent-icon agent-${agent.accent}`}><AgentAvatar agentId={agent.id} /></span>
                 <span><strong>{isEs ? translateAgentName(agent.id) : agent.name}</strong><small>{isEs ? translateAgentDescription(agent.id) : agent.description}</small></span>
                 <ChevronRight size={15} />
               </button>
@@ -147,7 +147,11 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
           {error && <p className="reference-agent-error">{error}</p>}
           {run && (
             <div className="reference-agent-result">
-              <div className="reference-agent-result-heading"><Check size={14} />{run.requires_approval ? (isEs ? "Propuesta pendiente" : "Proposal pending") : (isEs ? "Ejecución completada" : "Run completed")}</div>
+              <div className="reference-agent-result-heading">
+                <span className="reference-agent-result-avatar"><AgentAvatar agentId={agentId} /></span>
+                <Check size={14} />
+                {run.requires_approval ? (isEs ? "Propuesta pendiente" : "Proposal pending") : (isEs ? "Ejecución completada" : "Run completed")}
+              </div>
               <div className="reference-agent-meta">{run.id ? `Run ${run.id}` : ""}{run.checkpoint_ids?.length ? ` · ${run.checkpoint_ids.length} ${isEs ? "checkpoints" : "checkpoints"}` : ""}</div>
               <div className="reference-agent-tools">{run.tool_calls.map((call) => <span key={call.tool}><Check size={12} />{call.tool.replaceAll("_", " ")}</span>)}</div>
               {run.proposal_id && <button className="reference-agent-approve" onClick={approve} disabled={approving}>{approving ? (isEs ? "Aprobando..." : "Approving...") : (isEs ? "Aprobar propuesta" : "Approve proposal")}</button>}
@@ -159,6 +163,11 @@ export function AgentDock({ api, projectId, requirementId, locale }: { api: stri
       )}
     </div>
   );
+}
+
+function AgentAvatar({ agentId }: { agentId: string }) {
+  const asset = agentId === "qa-explorer" ? "verification-planner" : agentId === "acceptance-assistant" ? "agreement-analyst" : agentId;
+  return <img className="reference-agent-avatar" src={`/agents/generated/${asset}.png`} alt="" aria-hidden="true" />;
 }
 
 function translateAgentName(id: string) {

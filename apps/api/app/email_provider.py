@@ -18,6 +18,8 @@ class EmailProvider(Protocol):
 
     def send_agent_alert(self, *, to: str, agent_name: str, status: str, run_id: str, project_id: str, action_url: str) -> dict[str, Any]: ...
 
+    def send_review_otp(self, *, to: str, code: str, release_id: str) -> dict[str, Any]: ...
+
 
 def _payload(*, to: str, agent_name: str, status: str, run_id: str, project_id: str, action_url: str, from_address: str) -> dict[str, Any]:
     safe_status = status.replace("_", " ").title()
@@ -37,6 +39,11 @@ class MockEmailProvider:
 
     def send_agent_alert(self, **kwargs: Any) -> dict[str, Any]:
         delivery = {"id": f"email_{uuid4().hex[:12]}", "provider": self.provider_name, "status": "mocked", "to": kwargs["to"], "event": "agent_alert", "run_id": kwargs["run_id"]}
+        self.deliveries.append(delivery)
+        return delivery
+
+    def send_review_otp(self, **kwargs: Any) -> dict[str, Any]:
+        delivery = {"id": f"email_{uuid4().hex[:12]}", "provider": self.provider_name, "status": "mocked", "to": kwargs["to"], "event": "review_otp", "release_id": kwargs["release_id"]}
         self.deliveries.append(delivery)
         return delivery
 
@@ -60,6 +67,19 @@ class ResendEmailProvider:
         response.raise_for_status()
         result = response.json()
         delivery = {"id": result.get("id", f"email_{uuid4().hex[:12]}"), "provider": self.provider_name, "status": "sent", "to": kwargs["to"], "event": "agent_alert", "run_id": kwargs["run_id"]}
+        self.deliveries.append(delivery)
+        return delivery
+
+    def send_review_otp(self, **kwargs: Any) -> dict[str, Any]:
+        if not self.api_key:
+            raise RuntimeError("RESEND_API_KEY is required for Resend email delivery")
+        body = {"from": self.from_address, "to": [kwargs["to"]], "subject": "Your Signoff review code", "html": f"<p>Your Signoff verification code is <strong>{kwargs['code']}</strong>.</p><p>It expires in 10 minutes. If you did not request this code, you can ignore this message.</p>"}
+        if self.reply_to:
+            body["reply_to"] = self.reply_to
+        response = httpx.post("https://api.resend.com/emails", headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}, json=body, timeout=10)
+        response.raise_for_status()
+        result = response.json()
+        delivery = {"id": result.get("id", f"email_{uuid4().hex[:12]}"), "provider": self.provider_name, "status": "sent", "to": kwargs["to"], "event": "review_otp", "release_id": kwargs["release_id"]}
         self.deliveries.append(delivery)
         return delivery
 

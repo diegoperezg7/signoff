@@ -6,7 +6,7 @@ metadata and outcome in `LLMRun`; prompts and raw responses are not logged by
 default.
 
 The deployment allowlist is controlled by `SDA_AI_ALLOWED_PROVIDERS`. The
-default is `mock,openai`. External processing requires explicit consent and
+default is `mock,openai,openrouter`. External processing requires explicit consent and
 cannot process data above `SDA_AI_MAX_EXTERNAL_CLASSIFICATION` (default:
 `CONFIDENTIAL`).
 

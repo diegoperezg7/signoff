@@ -268,6 +268,22 @@ class LLMRun(Timestamped, Base):
     status: Mapped[str] = mapped_column(String(32), default="completed")
 
 
+class AIConsent(Timestamped, Base):
+    __tablename__ = "ai_consents"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[UUID] = mapped_column(ForeignKey("projects.id"), index=True)
+    document_id: Mapped[str] = mapped_column(String(240), index=True)
+    provider: Mapped[str] = mapped_column(String(80))
+    model_or_route: Mapped[str] = mapped_column(String(160))
+    classification: Mapped[str] = mapped_column(String(40), default="CONFIDENTIAL")
+    purpose: Mapped[str] = mapped_column(Text)
+    granted_by: Mapped[str] = mapped_column(String(160))
+    granted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 class AgentPolicy(Timestamped, Base):
     __tablename__ = "agent_policies"
     organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), primary_key=True)

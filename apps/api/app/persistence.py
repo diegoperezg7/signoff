@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from .catalog import ProjectCatalog
-from .db import AcceptanceCriterion, AgentApproval as DbAgentApproval, AgentCheckpoint as DbAgentCheckpoint, AgentPolicy as DbAgentPolicy, AgentRun as DbAgentRun, AgentStep as DbAgentStep, Base, DeliveryRelease, Organization, Project, Requirement, ScopeVersion, User, Membership
+from .db import AcceptanceCriterion, AIConsent, AgentApproval as DbAgentApproval, AgentCheckpoint as DbAgentCheckpoint, AgentPolicy as DbAgentPolicy, AgentRun as DbAgentRun, AgentStep as DbAgentStep, Base, DeliveryRelease, Organization, Project, Requirement, ScopeVersion, User, Membership
 
 
 def stable_uuid(value: str):
@@ -93,6 +93,47 @@ class PostgresRepository:
     def list_projects(self, organization_id: str = "org_demo") -> list[dict[str, Any]]:
         with self.session_factory() as session:
             return [self._project_dict(project) for project in self._project_query(session, organization_id)]
+
+    def membership_role(self, user_id: str, organization_id: str) -> str | None:
+        """Return the role only when the user belongs to the requested tenant."""
+        with self.session_factory() as session:
+            membership = session.scalar(
+                select(Membership)
+                .join(User, Membership.user_id == User.id)
+                .where(
+                    Membership.user_id == stable_uuid(user_id),
+                    Membership.organization_id == stable_uuid(organization_id),
+                )
+            )
+            return membership.role if membership else None
+
+    def list_ai_consents(self, project_id: str, organization_id: str) -> list[dict[str, Any]]:
+        with self.session_factory() as session:
+            project = self._find_project(session, project_id, organization_id)
+            if project is None:
+                return []
+            rows = session.scalars(select(AIConsent).where(AIConsent.project_id == project.id, AIConsent.organization_id == stable_uuid(organization_id), AIConsent.revoked_at.is_(None)))
+            return [{"id": str(row.id), "organization_id": organization_id, "project_id": project_id, "document_id": row.document_id, "provider": row.provider, "model_or_route": row.model_or_route, "classification": row.classification, "purpose": row.purpose, "granted_by": row.granted_by, "granted_at": row.granted_at.isoformat() if row.granted_at else None, "expires_at": row.expires_at.isoformat(), "revoked_at": None} for row in rows]
+
+    def save_ai_consent(self, record: dict[str, Any]) -> None:
+        from datetime import datetime
+        with self.session_factory.begin() as session:
+            project = self._find_project(session, record["project_id"], record["organization_id"])
+            if project is None:
+                return
+            consent = AIConsent(id=stable_uuid(record["id"]), organization_id=stable_uuid(record["organization_id"]), project_id=project.id, document_id=record["document_id"], provider=record["provider"], model_or_route=record["model_or_route"], classification=record["classification"], purpose=record["purpose"], granted_by=record["granted_by"], expires_at=datetime.fromisoformat(record["expires_at"]))
+            session.merge(consent)
+
+    def revoke_ai_consent(self, project_id: str, document_id: str, organization_id: str) -> int:
+        from datetime import datetime, timezone
+        with self.session_factory.begin() as session:
+            project = self._find_project(session, project_id, organization_id)
+            if project is None:
+                return 0
+            rows = list(session.scalars(select(AIConsent).where(AIConsent.project_id == project.id, AIConsent.organization_id == stable_uuid(organization_id), AIConsent.document_id == document_id, AIConsent.revoked_at.is_(None))))
+            for row in rows:
+                row.revoked_at = datetime.now(timezone.utc)
+            return len(rows)
 
     def get_project(self, project_id: str, organization_id: str = "org_demo") -> dict[str, Any] | None:
         with self.session_factory() as session:

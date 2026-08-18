@@ -26,6 +26,17 @@ def test_review_token():
     assert response.json()['status'] == 'recorded'
 
 
+def test_guest_review_otp_contract_in_mock_mode():
+    requested = client.post('/api/v1/review/demo-review-token/request-otp', json={'email': 'client@northstar.example'})
+    assert requested.status_code == 200
+    assert requested.json()['mock_code'] == '123456'
+    verified = client.post('/api/v1/review/demo-review-token/verify-otp', json={'email': 'client@northstar.example', 'code': '123456'})
+    assert verified.status_code == 200
+    session = verified.json()['guest_session']
+    reviewed = client.post('/api/v1/review/demo-review-token', json={'decision': 'accepted', 'guest_session': session})
+    assert reviewed.status_code == 200
+
+
 def test_client_review_evidence_reflects_verification_state():
     evidence = client.get('/api/v1/review/acme-review-token').json()['evidence']
     by_id = {item['id']: item['state'] for item in evidence}
@@ -44,6 +55,21 @@ def test_scope_readiness_graph_and_acceptance():
     requirements = client.get('/api/v1/projects/project_demo/requirements').json()
     decision = client.post(f"/api/v1/projects/project_demo/acceptance/{requirements[8]['id']}", json={'decision': 'accepted'}).json()
     assert decision['decision'] == 'accepted'
+
+
+def test_scope_upload_rejects_unsafe_or_mismatched_documents():
+    unsafe = client.post('/api/v1/scope/import', files={'file': ('../scope.txt', b'baseline', 'text/plain')})
+    assert unsafe.status_code == 400
+    mismatch = client.post('/api/v1/scope/import', files={'file': ('scope.pdf', b'not-a-pdf', 'application/pdf')})
+    assert mismatch.status_code == 400
+    valid = client.post('/api/v1/scope/import', files={'file': ('scope.txt', b'Approved baseline', 'text/plain')})
+    assert valid.status_code == 200
+    assert valid.json()['sha256']
+    document_id = valid.json()['document_id']
+    retention = client.get('/api/v1/projects/project_demo/privacy/retention')
+    assert retention.status_code == 200
+    erased = client.delete(f'/api/v1/projects/project_demo/documents/{document_id}')
+    assert erased.status_code == 200
 
 
 def test_file_inspector_and_bug_change_classification():
