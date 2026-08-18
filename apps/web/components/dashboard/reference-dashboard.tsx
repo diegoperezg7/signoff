@@ -1512,6 +1512,25 @@ function GlobalSurface({
           </article>
         </div>
       )}
+      {surface === "releases" && (
+        <div className="reference-release-insight" aria-label={locale === "es" ? "Estado del release" : "Release context"}>
+          <div>
+            <span>{locale === "es" ? "ESTADO ACTUAL" : "CURRENT STATE"}</span>
+            <strong>{data.project.status === "in_signoff" ? (locale === "es" ? "En aprobación" : "In signoff") : data.project.status.replace("_", " ")}</strong>
+            <small>{locale === "es" ? "La entrega está en revisión del cliente." : "The delivery is currently with the client for review."}</small>
+          </div>
+          <div>
+            <span>{locale === "es" ? "COBERTURA" : "COVERAGE"}</span>
+            <strong>{data.metrics.coverage.value}%</strong>
+            <small>{locale === "es" ? "Requisitos con evidencia trazable." : "Requirements with traceable evidence."}</small>
+          </div>
+          <div>
+            <span>{locale === "es" ? "PRÓXIMO HITO" : "NEXT MILESTONE"}</span>
+            <strong>{data.project.target_date.slice(0, 10)}</strong>
+            <small>{locale === "es" ? "Fecha objetivo de aprobación." : "Target sign-off date."}</small>
+          </div>
+        </div>
+      )}
       {surface === "baselines" && (
         <div className="reference-card reference-global-list">
           <div className="reference-baseline-import">

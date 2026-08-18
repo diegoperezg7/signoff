@@ -1877,6 +1877,45 @@
   overflow: hidden;
   padding: 5px 16px;
 }
+.reference-release-insight {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 14px;
+  border: 1px solid var(--reference-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--reference-border);
+}
+.reference-release-insight > div {
+  min-height: 112px;
+  padding: 17px 18px;
+  background: var(--reference-surface);
+}
+.reference-release-insight span,
+.reference-release-insight strong,
+.reference-release-insight small {
+  display: block;
+}
+.reference-release-insight span {
+  color: var(--reference-subtle);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.reference-release-insight strong {
+  margin-top: 10px;
+  color: var(--reference-text);
+  font-size: 20px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+.reference-release-insight small {
+  margin-top: 6px;
+  color: var(--reference-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
 .reference-global-row {
   width: 100%;
   display: flex;
@@ -2070,6 +2109,9 @@
   }
 }
 @media (max-width: 900px) {
+  .reference-release-insight {
+    grid-template-columns: 1fr;
+  }
   .reference-topbar {
     height: auto;
     min-height: 96px;
