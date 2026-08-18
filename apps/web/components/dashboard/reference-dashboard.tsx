@@ -826,8 +826,6 @@ export function ReferenceDashboard() {
             </span>
             <ChevronRight size={14} />
             <span>{currentData.project.name}</span>
-            <ChevronRight size={14} />
-            <strong>{currentData.project.release}</strong>
           </div>
           <div className="reference-top-actions">
             <label className="reference-search">

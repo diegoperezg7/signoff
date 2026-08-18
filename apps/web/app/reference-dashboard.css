@@ -232,14 +232,14 @@
   gap: 22px;
 }
 .reference-search {
-  width: 259px;
-  height: 39px;
+  width: 218px;
+  height: 36px;
   display: flex;
   align-items: center;
   gap: 9px;
   padding: 0 10px 0 13px;
   border: 1px solid var(--reference-border-strong);
-  border-radius: 8px;
+  border-radius: 999px;
   background: rgba(14, 22, 36, 0.64);
   color: var(--reference-muted);
 }
@@ -1953,11 +1953,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .reference-breadcrumb > span,
+  .reference-breadcrumb > span:first-child,
   .reference-breadcrumb > svg {
     display: none;
   }
-  .reference-breadcrumb > strong {
+  .reference-breadcrumb > span:nth-of-type(2) {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2052,11 +2052,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .reference-breadcrumb > span,
+  .reference-breadcrumb > span:first-child,
   .reference-breadcrumb > svg {
     display: none;
   }
-  .reference-breadcrumb > strong {
+  .reference-breadcrumb > span:nth-of-type(2) {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
