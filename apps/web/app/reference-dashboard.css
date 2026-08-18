@@ -1910,8 +1910,9 @@
   .brand-lockup-compact {
     width: 46px;
     height: 46px;
-    object-fit: cover;
-    object-position: left;
+    object-fit: contain;
+    object-position: center;
+    content: url('/brand/signoff-mark-transparent.png');
   }
   .reference-nav-label,
   .reference-nav-item span,
