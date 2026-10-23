@@ -12,6 +12,14 @@ from typing import Any
 def inspect_file(filename: str, content: bytes) -> dict[str, Any]:
     suffix = Path(filename).suffix.lower()
     result: dict[str, Any] = {"filename": filename, "format": suffix.lstrip("."), "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(), "valid": True}
+    try:
+        return _inspect_parsed(suffix, content, result)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError, csv.Error):
+        result.update({"valid": False, "error": "File could not be parsed"})
+        return result
+
+
+def _inspect_parsed(suffix: str, content: bytes, result: dict[str, Any]) -> dict[str, Any]:
     if suffix == ".csv":
         rows = list(csv.DictReader(io.StringIO(content.decode("utf-8-sig"))))
         result.update({"columns": list(rows[0].keys()) if rows else [], "row_count": len(rows), "sample": rows[:3]})

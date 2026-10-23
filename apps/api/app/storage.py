@@ -18,7 +18,10 @@ class LocalStorageProvider:
         return hashlib.sha256(content).hexdigest()
 
     def _safe_key(self, key: str) -> str:
-        candidate = PurePosixPath(key.replace("\\", "/"))
+        normalized = key.replace("\\", "/")
+        if not normalized or normalized.startswith("/") or "//" in normalized:
+            raise ValueError("Unsafe storage key")
+        candidate = PurePosixPath(normalized)
         if candidate.is_absolute() or any(part in {"", ".", ".."} for part in candidate.parts):
             raise ValueError("Unsafe storage key")
         return "/".join(candidate.parts)

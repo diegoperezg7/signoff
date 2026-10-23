@@ -1,5 +1,7 @@
 .next/
 .next-*/
+.next-build/
+.next-dev/
 node_modules/
 **/.next/
 **/.next-*/
@@ -7,6 +9,8 @@ node_modules/
 __pycache__/
 *.py[cod]
 .env
+.env.*
+!.env.example
 .venv/
 .sda-storage/
 *.sqlite
@@ -16,3 +20,6 @@ build/
 *.log
 *.tsbuildinfo
 .gstack/
+playwright-report/
+test-results/
+coverage/
