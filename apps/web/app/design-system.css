@@ -1,0 +1,1079 @@
+/* Signoff product layer: shared visual language for workspace surfaces. */
+:root {
+  --signoff-font-display: var(--font-geist), Geist, system-ui, sans-serif;
+  --signoff-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --signoff-radius-sm: 7px;
+  --signoff-radius-md: 10px;
+  --signoff-radius-lg: 14px;
+  --signoff-space-1: 4px;
+  --signoff-space-2: 8px;
+  --signoff-space-3: 12px;
+  --signoff-space-4: 16px;
+  --signoff-space-5: 20px;
+  --signoff-space-6: 24px;
+  --signoff-shadow-soft: 0 12px 30px rgba(3, 8, 20, 0.12);
+  --signoff-shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.16);
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--signoff-font-display);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 0;
+  box-shadow: var(--signoff-shadow-focus);
+}
+
+.reference-dashboard {
+  --reference-radius: var(--signoff-radius-md);
+  --reference-control-radius: var(--signoff-radius-sm);
+  --reference-surface-raised: color-mix(in srgb, var(--reference-surface-2) 88%, var(--reference-primary) 12%);
+  letter-spacing: -0.006em;
+}
+
+.reference-dashboard .reference-sidebar {
+  padding-top: 24px;
+  padding-bottom: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--reference-sidebar) 94%, var(--reference-primary) 6%), var(--reference-sidebar));
+}
+
+.reference-dashboard .reference-brand {
+  height: 96px;
+  padding: 10px 12px 20px;
+}
+
+.reference-dashboard .brand-lockup-frame-compact {
+  width: 166px;
+  height: 43px;
+}
+
+.reference-dashboard .reference-nav {
+  gap: 4px;
+}
+
+.reference-dashboard .reference-nav-group + .reference-nav-group {
+  margin-top: 26px;
+}
+
+.reference-dashboard .reference-nav-label {
+  padding: 0 14px 10px;
+  color: var(--reference-subtle);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+}
+
+.reference-dashboard .reference-nav-item {
+  min-height: 42px;
+  gap: 13px;
+  border-radius: var(--signoff-radius-sm);
+  color: color-mix(in srgb, var(--reference-muted) 88%, var(--reference-text) 12%);
+  font-size: 12px;
+  font-weight: 480;
+}
+
+.reference-dashboard .reference-nav-item svg {
+  stroke-width: 1.65;
+}
+
+.reference-dashboard .reference-nav-item:hover {
+  background: color-mix(in srgb, var(--reference-surface-2) 86%, var(--reference-primary) 14%);
+}
+
+.reference-dashboard .reference-nav-item.is-active {
+  position: relative;
+  background: color-mix(in srgb, var(--reference-primary-soft) 88%, var(--reference-surface-2) 12%);
+  box-shadow: inset 2px 0 0 var(--reference-primary), 0 6px 16px rgba(0, 0, 0, 0.08);
+  color: var(--reference-text);
+  font-weight: 580;
+}
+
+.reference-dashboard .reference-nav-item.is-active svg {
+  color: #8c86ff;
+}
+
+.reference-dashboard .reference-topbar {
+  min-height: 66px;
+  height: 66px;
+  padding-inline: 32px;
+  background: color-mix(in srgb, var(--reference-bg) 92%, var(--reference-surface-2) 8%);
+}
+
+.reference-dashboard .reference-top-actions {
+  gap: 12px;
+}
+
+.reference-dashboard .reference-top-actions > .reference-notification-wrap {
+  margin-left: auto;
+}
+
+.reference-dashboard .reference-search {
+  width: min(280px, 34vw);
+  height: 38px;
+  border-radius: var(--signoff-radius-md);
+  background: color-mix(in srgb, var(--reference-surface) 76%, transparent);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.reference-dashboard .reference-search:hover {
+  background: var(--reference-surface);
+  border-color: var(--reference-border-strong);
+}
+
+.reference-dashboard .reference-search:focus-within {
+  background: var(--reference-surface);
+  box-shadow: var(--signoff-shadow-focus);
+}
+
+.reference-dashboard .reference-icon-button,
+.reference-dashboard .reference-theme-toggle,
+.reference-dashboard .reference-user-button {
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: var(--signoff-radius-sm);
+  transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.reference-dashboard .reference-icon-button:hover,
+.reference-dashboard .reference-theme-toggle:hover,
+.reference-dashboard .reference-user-button:hover {
+  background: var(--reference-surface-2);
+}
+
+.reference-dashboard .reference-release-header {
+  padding: 30px 34px 20px;
+}
+
+.reference-dashboard .reference-title-row {
+  gap: 16px;
+}
+
+.reference-dashboard .reference-title-row h1 {
+  font-size: clamp(29px, 2.7vw, 37px);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+}
+
+.reference-dashboard .reference-release-header p {
+  margin-top: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.reference-dashboard .reference-status-select,
+.reference-dashboard .reference-pill {
+  border-radius: 999px;
+}
+
+.reference-dashboard .reference-primary-button,
+.reference-dashboard .reference-secondary-button {
+  border-radius: var(--signoff-radius-sm);
+}
+
+.reference-dashboard .reference-primary-button {
+  box-shadow: 0 8px 22px rgba(91, 84, 246, 0.24);
+}
+
+.reference-dashboard .reference-tabs {
+  height: 48px;
+  gap: 32px;
+  padding-inline: 34px;
+}
+
+.reference-dashboard .reference-context-strip {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 28px;
+  padding: 0 34px;
+  border-bottom: 1px solid var(--reference-border);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--reference-primary-soft) 52%, transparent), transparent 62%),
+    color-mix(in srgb, var(--reference-bg) 84%, var(--reference-surface-2) 16%);
+}
+
+.reference-dashboard .reference-context-lead {
+  display: grid;
+  min-width: 205px;
+  gap: 4px;
+  padding-right: 28px;
+  border-right: 1px solid var(--reference-border);
+}
+
+.reference-dashboard .reference-context-kicker,
+.reference-dashboard .reference-context-item small {
+  color: var(--reference-subtle);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.reference-dashboard .reference-context-lead strong {
+  overflow: hidden;
+  color: var(--reference-text);
+  font-size: 12px;
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-dashboard .reference-context-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.reference-dashboard .reference-context-item > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+.reference-dashboard .reference-context-item strong {
+  color: var(--reference-text);
+  font-size: 11px;
+  font-weight: 540;
+  white-space: nowrap;
+}
+
+.reference-dashboard .context-indicator {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.reference-dashboard .context-indicator-error {
+  color: var(--reference-error);
+  background: var(--reference-error);
+}
+
+.reference-dashboard .context-indicator-warning {
+  color: var(--reference-warning);
+  background: var(--reference-warning);
+}
+
+.reference-dashboard .reference-context-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--reference-primary) 34%, var(--reference-border) 66%);
+  border-radius: var(--signoff-radius-sm);
+  background: color-mix(in srgb, var(--reference-primary-soft) 68%, transparent);
+  color: #a8a3ff;
+  font-size: 11px;
+  font-weight: 580;
+  white-space: nowrap;
+}
+
+.reference-dashboard .reference-context-action:hover {
+  border-color: var(--reference-primary);
+  background: var(--reference-primary-soft);
+  color: var(--reference-text);
+  transform: translateY(-1px);
+}
+
+.reference-dashboard .reference-agent-dock {
+  position: relative;
+  z-index: 50;
+  flex: none;
+}
+
+.reference-dashboard .reference-agent-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, var(--reference-primary) 42%, var(--reference-border) 58%);
+  border-radius: var(--signoff-radius-sm);
+  background: color-mix(in srgb, var(--reference-primary-soft) 72%, transparent);
+  color: #b4b0ff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-agent-trigger:hover {
+  border-color: var(--reference-primary);
+  background: var(--reference-primary-soft);
+  color: var(--reference-text);
+  transform: translateY(-1px);
+}
+
+.reference-dashboard .reference-agent-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 360px;
+  max-height: min(720px, calc(100vh - 118px));
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--reference-border-strong);
+  border-radius: var(--signoff-radius-lg);
+  background: color-mix(in srgb, var(--reference-surface) 96%, var(--reference-primary) 4%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+}
+
+.reference-dashboard .reference-agent-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--reference-border);
+}
+
+.reference-dashboard .reference-agent-panel-header h2 {
+  margin: 6px 0 0;
+  color: var(--reference-text);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.reference-dashboard .reference-agent-close {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--signoff-radius-sm);
+  background: transparent;
+  color: var(--reference-muted);
+}
+
+.reference-dashboard .reference-agent-close:hover {
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+}
+
+.reference-dashboard .reference-agent-safety {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 9px 10px;
+  border: 1px solid color-mix(in srgb, var(--reference-success) 28%, var(--reference-border) 72%);
+  border-radius: var(--signoff-radius-sm);
+  background: color-mix(in srgb, var(--reference-success) 8%, transparent);
+  color: var(--reference-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.reference-dashboard .reference-agent-safety svg {
+  flex: none;
+  color: var(--reference-success);
+}
+
+.reference-dashboard .reference-agent-list {
+  display: grid;
+  gap: 6px;
+}
+
+.reference-dashboard .reference-agent-option {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 15px;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: var(--signoff-radius-sm);
+  background: transparent;
+  color: var(--reference-muted);
+  text-align: left;
+}
+
+.reference-dashboard .reference-agent-option:hover,
+.reference-dashboard .reference-agent-option.is-selected {
+  border-color: var(--reference-border-strong);
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+}
+
+.reference-dashboard .reference-agent-option > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.reference-dashboard .reference-agent-option strong {
+  overflow: hidden;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-dashboard .reference-agent-option small {
+  overflow: hidden;
+  color: var(--reference-muted);
+  font-size: 10px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-dashboard .reference-agent-icon {
+  display: grid;
+  overflow: hidden;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: var(--signoff-radius-sm);
+  background: transparent;
+  color: #aaa6ff;
+}
+
+.reference-dashboard .reference-agent-avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.reference-dashboard .reference-agent-option:hover .reference-agent-avatar,
+.reference-dashboard .reference-agent-option.is-selected .reference-agent-avatar {
+  transform: translateY(-2px) scale(1.04);
+  filter: drop-shadow(0 5px 8px color-mix(in srgb, var(--reference-primary) 28%, transparent));
+}
+
+.reference-dashboard .reference-agent-loading,
+.reference-dashboard .reference-agent-empty {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px dashed var(--reference-border);
+  border-radius: var(--signoff-radius-sm);
+  color: var(--reference-muted);
+  font-size: 10px;
+}
+
+.reference-dashboard .agent-amber { background: transparent; color: var(--reference-warning); }
+.reference-dashboard .agent-blue { background: transparent; color: var(--reference-progress); }
+.reference-dashboard .agent-violet { background: transparent; color: #b49aff; }
+
+.reference-dashboard .reference-agent-question {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+  color: var(--reference-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-agent-question textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 9px 10px;
+  border: 1px solid var(--reference-border);
+  border-radius: var(--signoff-radius-sm);
+  outline: 0;
+  background: var(--reference-bg);
+  color: var(--reference-text);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.reference-dashboard .reference-agent-question textarea:focus {
+  border-color: var(--reference-primary);
+  box-shadow: var(--signoff-shadow-focus);
+}
+
+.reference-dashboard .reference-agent-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--reference-subtle);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.reference-dashboard .reference-agent-consent input {
+  accent-color: var(--reference-primary);
+  margin: 1px 0 0;
+}
+
+.reference-dashboard .reference-agent-run,
+.reference-dashboard .reference-agent-approve {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 37px;
+  margin-top: 13px;
+  border: 1px solid var(--reference-primary);
+  border-radius: var(--signoff-radius-sm);
+  background: var(--reference-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.reference-dashboard .reference-agent-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+.reference-dashboard .reference-agent-ask {
+  align-items: center;
+  background: var(--reference-raised);
+  border: 1px solid var(--reference-border);
+  border-radius: 10px;
+  color: var(--reference-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  gap: 7px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 12px;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.reference-dashboard .reference-agent-ask:hover:not(:disabled) {
+  background: var(--reference-surface);
+  border-color: var(--reference-primary);
+  transform: translateY(-1px);
+}
+
+.reference-dashboard .reference-agent-run:hover,
+.reference-dashboard .reference-agent-approve:hover {
+  background: #726bff;
+}
+
+.reference-dashboard .reference-agent-run:disabled,
+.reference-dashboard .reference-agent-ask:disabled,
+.reference-dashboard .reference-agent-approve:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.reference-dashboard .reference-agent-spinner {
+  animation: reference-agent-spin 900ms linear infinite;
+}
+
+@keyframes reference-agent-spin {
+  to { transform: rotate(360deg); }
+}
+
+.reference-dashboard .reference-agent-error {
+  margin: 10px 0 0;
+  color: var(--reference-error);
+  font-size: 10px;
+}
+
+.reference-dashboard .reference-agent-result {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid var(--reference-border);
+}
+
+.reference-dashboard .reference-agent-result-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--reference-success);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-agent-result-heading.is-failed {
+  color: var(--reference-error);
+}
+
+.reference-dashboard .reference-agent-result-avatar {
+  display: grid;
+  overflow: hidden;
+  width: 24px;
+  height: 24px;
+  margin-right: 2px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--reference-muted);
+}
+
+.reference-dashboard .reference-agent-result-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reference-dashboard .reference-agent-result-avatar .reference-agent-avatar {
+  width: 100%;
+  height: 100%;
+}
+.reference-dashboard .reference-agent-meta {
+  color: var(--reference-muted);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  margin: 5px 0 8px;
+}
+
+.reference-dashboard .reference-agent-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.reference-dashboard .reference-agent-tools span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--reference-border);
+  border-radius: 999px;
+  color: var(--reference-muted);
+  font-size: 9px;
+}
+
+.reference-dashboard .reference-agent-result-summary {
+  display: grid;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 10px;
+  border-radius: var(--signoff-radius-sm);
+  background: var(--reference-bg);
+}
+
+.reference-dashboard .reference-agent-result-row {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reference-dashboard .reference-agent-result-row span {
+  color: var(--reference-muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.reference-dashboard .reference-agent-result-row strong {
+  overflow: hidden;
+  color: var(--reference-text);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+}
+
+.reference-dashboard .reference-agent-result-empty {
+  margin: 10px 0 0;
+  color: var(--reference-muted);
+  font-size: 10px;
+}
+.reference-dashboard .reference-agent-history {
+  border-top: 1px solid var(--reference-border);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+.reference-dashboard .reference-agent-history-row {
+  align-items: center;
+  border-bottom: 1px solid rgba(148, 163, 184, .12);
+  display: flex;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.reference-dashboard .reference-agent-history-row small {
+  color: var(--reference-success);
+  font-family: var(--font-sans, sans-serif);
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .reference-dashboard .reference-agent-panel {
+    position: fixed;
+    top: 88px;
+    right: 16px;
+    width: min(360px, calc(100vw - 32px));
+  }
+}
+
+@media (max-width: 640px) {
+  .reference-dashboard .reference-agent-dock {
+    grid-column: 1 / -1;
+  }
+
+  .reference-dashboard .reference-agent-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.reference-dashboard .reference-tabs button {
+  height: 48px;
+  color: color-mix(in srgb, var(--reference-muted) 90%, var(--reference-text) 10%);
+  font-size: 12px;
+  font-weight: 480;
+}
+
+.reference-dashboard .reference-tabs button.is-active {
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-workspace {
+  gap: 16px;
+  padding: 19px 24px 48px 34px;
+}
+
+.reference-dashboard .reference-metrics {
+  gap: 14px;
+}
+
+.reference-dashboard .reference-metric-card,
+.reference-dashboard .reference-card,
+.reference-dashboard .reference-drawer {
+  border-radius: var(--signoff-radius-md);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025), var(--signoff-shadow-soft);
+}
+
+.reference-dashboard .reference-metric-card {
+  position: relative;
+  height: 184px;
+  min-height: 184px;
+  padding: 21px 20px 17px;
+}
+
+.reference-dashboard .reference-metric-card::before {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  left: 18px;
+  height: 2px;
+  content: "";
+  border-radius: 0 0 4px 4px;
+  background: var(--reference-primary);
+  opacity: 0.65;
+}
+
+.reference-dashboard .reference-metric-card:nth-child(1)::before {
+  background: #7c83ff;
+}
+
+.reference-dashboard .reference-metric-card:nth-child(2)::before {
+  background: var(--reference-success);
+}
+
+.reference-dashboard .reference-metric-card:nth-child(3)::before {
+  background: var(--reference-progress);
+}
+
+.reference-dashboard .reference-metric-card:nth-child(4)::before {
+  background: var(--reference-warning);
+}
+
+.reference-dashboard .reference-metric-top {
+  font-weight: 520;
+}
+
+.reference-dashboard .reference-metric-value,
+.reference-dashboard .reference-tab-side-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.reference-dashboard .reference-metric-value {
+  font-size: 31px;
+  font-weight: 620;
+  letter-spacing: -0.055em;
+}
+
+.reference-dashboard .reference-metric-icon {
+  border-radius: var(--signoff-radius-sm);
+  background: var(--reference-surface-raised);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.reference-dashboard .reference-card-heading {
+  min-height: 55px;
+  padding-inline: 18px;
+}
+
+.reference-dashboard .reference-card-heading h2 {
+  font-size: 15px;
+  font-weight: 620;
+}
+
+.reference-dashboard .reference-requirement-row {
+  min-height: 47px;
+}
+
+.reference-dashboard .reference-requirement-row:hover {
+  background: color-mix(in srgb, var(--reference-surface-2) 84%, var(--reference-primary) 16%);
+}
+
+.reference-dashboard .reference-requirement-row.is-selected {
+  box-shadow: inset 2px 0 0 var(--reference-primary);
+}
+
+.reference-dashboard .reference-req-title,
+.reference-dashboard .reference-activity-row strong {
+  font-weight: 520;
+}
+
+.reference-dashboard .reference-drawer {
+  box-shadow: -12px 0 34px rgba(0, 0, 0, 0.12), var(--signoff-shadow-soft);
+}
+
+.reference-dashboard .reference-drawer-header {
+  min-height: 61px;
+}
+
+.reference-dashboard .reference-drawer-header button,
+.reference-dashboard .reference-drawer-toolbar button:not(.reference-pill),
+.reference-dashboard .reference-card-heading button {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--signoff-radius-sm);
+}
+
+.reference-dashboard .reference-drawer-header button:hover,
+.reference-dashboard .reference-drawer-toolbar button:not(.reference-pill):hover,
+.reference-dashboard .reference-card-heading button:hover {
+  background: var(--reference-surface-2);
+}
+
+.reference-dashboard .reference-donut {
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.12));
+}
+
+.reference-dashboard .reference-global-surface {
+  padding: 38px 34px 54px;
+}
+
+.reference-dashboard .reference-global-heading {
+  margin-bottom: 32px;
+}
+
+.reference-dashboard .reference-global-heading h1 {
+  font-size: clamp(29px, 3vw, 36px);
+  font-weight: 640;
+  letter-spacing: -0.06em;
+}
+
+.reference-dashboard .reference-global-grid {
+  gap: 16px;
+}
+
+.reference-dashboard .reference-global-list,
+.reference-dashboard .reference-project-card,
+.reference-dashboard .reference-report-card,
+.reference-dashboard .reference-template-card,
+.reference-dashboard .reference-team-card,
+.reference-dashboard .reference-integration-card,
+.reference-dashboard .reference-settings-card {
+  border-radius: var(--signoff-radius-lg);
+}
+
+.reference-dashboard .reference-global-row {
+  min-height: 66px;
+  padding: 12px 16px;
+}
+
+.reference-dashboard .reference-global-row:hover {
+  background: color-mix(in srgb, var(--reference-surface-2) 82%, var(--reference-primary) 18%);
+}
+
+.reference-dashboard .reference-tab-view {
+  min-width: 0;
+}
+
+.reference-dashboard.reference-light {
+  --signoff-shadow-soft: 0 10px 24px rgba(31, 48, 83, 0.08);
+}
+
+.reference-dashboard.reference-light .reference-sidebar {
+  background: linear-gradient(180deg, #ffffff, #f8faff);
+}
+
+.reference-dashboard.reference-light .reference-topbar {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.reference-dashboard.reference-light .reference-status-select {
+  border-color: #d7d4ff;
+  background: #eeecff;
+  color: #3730a3;
+}
+
+.reference-dashboard.reference-light .reference-status-select .status-dot {
+  background: #16a34a;
+}
+
+.reference-dashboard.reference-light .reference-metric-card,
+.reference-dashboard.reference-light .reference-card,
+.reference-dashboard.reference-light .reference-drawer {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), var(--signoff-shadow-soft);
+}
+
+.reference-dashboard.reference-light .reference-metric-icon {
+  background: #f1f2ff;
+  border-color: #dfe3f4;
+}
+
+.reference-dashboard.reference-light .reference-requirement-row.is-selected {
+  background: #f0f2ff;
+  border-color: #cbd4f7;
+}
+
+.reference-dashboard.reference-light .reference-search:focus-within {
+  border-color: #aeb9ef;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.reference-dashboard.reference-light .reference-primary-button {
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.18);
+}
+
+@media (max-width: 1080px) {
+  .reference-dashboard .brand-lockup-frame-compact {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 900px) {
+  .reference-dashboard .reference-topbar {
+    min-height: 86px;
+    height: auto;
+  }
+
+  .reference-dashboard .reference-search {
+    width: min(100%, 320px);
+  }
+
+  .reference-dashboard .reference-release-header {
+    padding: 26px 20px 16px;
+  }
+
+  .reference-dashboard .reference-context-strip {
+    gap: 18px;
+    overflow-x: auto;
+    padding-inline: 20px;
+  }
+
+  .reference-dashboard .reference-context-lead {
+    min-width: 180px;
+  }
+
+  .reference-dashboard .reference-tabs {
+    gap: 24px;
+    overflow-x: auto;
+    padding-inline: 20px;
+  }
+
+  .reference-dashboard .reference-workspace {
+    padding: 16px 20px 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reference-dashboard .reference-top-actions {
+    gap: 6px;
+  }
+
+  .reference-dashboard .reference-search {
+    flex: 1;
+    width: auto;
+  }
+
+  .reference-dashboard .reference-search kbd {
+    display: none;
+  }
+
+  .reference-dashboard .reference-title-row {
+    display: grid;
+    gap: 11px;
+  }
+
+  .reference-dashboard .reference-title-row h1 {
+    font-size: 27px;
+  }
+
+  .reference-dashboard .reference-context-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    min-height: 0;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .reference-dashboard .reference-context-lead {
+    grid-column: 1 / -1;
+    min-width: 0;
+    padding-right: 0;
+    border-right: 0;
+  }
+
+  .reference-dashboard .reference-context-item strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .reference-dashboard .reference-context-action {
+    grid-column: 1 / -1;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .reference-dashboard .reference-header-buttons {
+    margin-top: 18px;
+  }
+
+  .reference-dashboard .reference-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .reference-dashboard .reference-metric-card {
+    height: auto;
+    min-height: 140px;
+  }
+
+  .reference-dashboard .reference-global-surface {
+    padding: 26px 20px 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reference-dashboard *,
+  .reference-dashboard *::before,
+  .reference-dashboard *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
