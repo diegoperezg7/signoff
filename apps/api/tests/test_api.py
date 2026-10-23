@@ -196,3 +196,34 @@ def test_evidence_links_expire_and_are_signed():
 def acme_requirement_id(human_id: str) -> str:
     requirements = client.get('/api/v1/projects/project_acme/requirements').json()
     return next(item['id'] for item in requirements if item['human_id'] == human_id)
+
+
+def test_project_routes_are_scoped_to_the_caller_organization():
+    from app.auth import CurrentUser, current_user
+
+    routes = [
+        ('get', '/api/v1/projects/project_demo/requirements'),
+        ('get', '/api/v1/projects/project_demo/changes'),
+        ('post', '/api/v1/projects/project_demo/runs'),
+        ('get', '/api/v1/projects/project_demo/evidence'),
+        ('get', '/api/v1/projects/project_demo/evidence/login-success.png/signed-url'),
+        ('get', '/api/v1/projects/project_demo/delivery-pack'),
+        ('get', '/api/v1/projects/project_demo/scope/versions'),
+        ('get', '/api/v1/projects/project_demo/readiness'),
+        ('get', '/api/v1/projects/project_demo/graph'),
+        ('post', '/api/v1/projects/project_demo/file-inspections'),
+        ('post', '/api/v1/projects/project_demo/human-evidence'),
+        ('get', '/api/v1/projects/project_demo/acceptance'),
+        ('get', '/api/v1/projects/project_demo/attention'),
+        ('post', '/api/v1/projects/project_demo/prepare-delivery'),
+        ('get', '/api/v1/projects/project_demo/audit'),
+    ]
+    app.dependency_overrides[current_user] = lambda: CurrentUser(id='other-owner', organization_id='org_other')
+    try:
+        for method, path in routes:
+            response = getattr(client, method)(path, **({'json': {}} if method == 'post' else {}))
+            assert response.status_code == 404, (method, path, response.status_code)
+    finally:
+        app.dependency_overrides.clear()
+    assert client.get('/api/v1/projects/project_demo/evidence').status_code == 200
+    assert client.get('/api/v1/projects/project_demo/readiness').status_code == 200

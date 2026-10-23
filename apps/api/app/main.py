@@ -373,6 +373,12 @@ def project_or_404(project_id: str) -> dict:
     return project
 
 
+def require_project_access(project_id: str, user: CurrentUser = Depends(current_user)) -> None:
+    """Resolve the project through the caller's organization before any handler runs."""
+    if not catalog.get_project(project_id, user.organization_id):
+        raise HTTPException(404, "Project not found")
+
+
 def _review_record(token: str) -> dict[str, Any]:
     """Resolve server-side review metadata without persisting raw guest tokens."""
     configured_demo = os.getenv("SIGNOFF_REVIEW_TOKEN_DEMO", "demo-review-token" if os.getenv("MOCK_MODE", "true").lower() == "true" else "")
@@ -1145,7 +1151,7 @@ def dashboard(user: CurrentUser = Depends(current_user)) -> dict:
     return {"project": store.project, "counts": counts, "scope_changes": len(store.changes), "attention": ["Performance budget has no passing run", "Warehouse manager role awaits approval", "Email alerts are partially demonstrated"], "requirements": len(store.requirements)}
 
 
-@app.get("/api/v1/projects/{project_id}/requirements", response_model=list[Requirement])
+@app.get("/api/v1/projects/{project_id}/requirements", response_model=list[Requirement], dependencies=[Depends(require_project_access)])
 def requirements(project_id: str) -> list[Requirement]:
     return canonical_requirements(project_id)
 
@@ -1214,7 +1220,7 @@ async def import_scope(file: UploadFile = File(...)) -> dict:
     return {"status": "draft_ready", "document_id": document_id, "filename": filename, "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(), "retention_days": store.document_records[document_id]["retention_days"], "version": "Scope v2 (draft)", "message": "Mock extraction complete. Review the suggested requirements before confirming."}
 
 
-@app.get("/api/v1/projects/{project_id}/changes", response_model=list[ChangeRequest])
+@app.get("/api/v1/projects/{project_id}/changes", response_model=list[ChangeRequest], dependencies=[Depends(require_project_access)])
 def changes(project_id: str) -> list[ChangeRequest]:
     return canonical_changes(project_id)
 
@@ -1229,7 +1235,7 @@ def update_change(change_id: UUID, payload: dict) -> ChangeRequest:
     return change
 
 
-@app.patch("/api/v1/projects/{project_id}/changes/{change_id}", response_model=ChangeRequest)
+@app.patch("/api/v1/projects/{project_id}/changes/{change_id}", response_model=ChangeRequest, dependencies=[Depends(require_project_access)])
 def update_project_change(project_id: str, change_id: UUID, payload: dict) -> ChangeRequest:
     project_or_404(project_id)
     change = next((item for item in canonical_changes(project_id) if item.id == change_id), None)
@@ -1249,7 +1255,7 @@ def update_project_change(project_id: str, change_id: UUID, payload: dict) -> Ch
     return change
 
 
-@app.post("/api/v1/projects/{project_id}/runs")
+@app.post("/api/v1/projects/{project_id}/runs", dependencies=[Depends(require_project_access)])
 def run_verification(project_id: str, payload: RunRequest) -> dict:
     project_or_404(project_id)
     requirements_for_project = canonical_requirements(project_id)
@@ -1271,12 +1277,12 @@ def run_verification(project_id: str, payload: RunRequest) -> dict:
     return {"run_id": "run_" + uuid4().hex[:10], "status": "completed", "target_url": payload.target_url, "evidence": created}
 
 
-@app.get("/api/v1/projects/{project_id}/evidence", response_model=list[Evidence])
+@app.get("/api/v1/projects/{project_id}/evidence", response_model=list[Evidence], dependencies=[Depends(require_project_access)])
 def evidence(project_id: str) -> list[Evidence]:
     return canonical_evidence(project_id)
 
 
-@app.get("/api/v1/projects/{project_id}/evidence/{artifact_id}/signed-url")
+@app.get("/api/v1/projects/{project_id}/evidence/{artifact_id}/signed-url", dependencies=[Depends(require_project_access)])
 def evidence_signed_url(project_id: str, artifact_id: str) -> dict[str, str]:
     artifact = next((item for item in canonical_evidence(project_id) if str(item.id) == artifact_id or item.artifact == artifact_id), None)
     if not artifact:
@@ -1306,7 +1312,7 @@ def get_evidence_object(key: str, expires: int, signature: str) -> Response:
     return Response(content=content, media_type="application/octet-stream")
 
 
-@app.get("/api/v1/projects/{project_id}/delivery-pack")
+@app.get("/api/v1/projects/{project_id}/delivery-pack", dependencies=[Depends(require_project_access)])
 def delivery_pack(project_id: str) -> dict:
     project_or_404(project_id)
     if project_id == CUSTOMER_PROJECT_ID:
@@ -1419,12 +1425,12 @@ def require_demo_project(project_id: str) -> None:
     project_or_404(project_id)
 
 
-@app.get("/api/v1/projects/{project_id}/scope/versions")
+@app.get("/api/v1/projects/{project_id}/scope/versions", dependencies=[Depends(require_project_access)])
 def scope_versions(project_id: str) -> list[dict]:
     return canonical_scope_versions(project_id)
 
 
-@app.post("/api/v1/projects/{project_id}/scope/versions")
+@app.post("/api/v1/projects/{project_id}/scope/versions", dependencies=[Depends(require_project_access)])
 def create_scope_version(project_id: str, payload: ScopeVersionRequest) -> dict:
     require_demo_project(project_id)
     if project_id != CUSTOMER_PROJECT_ID:
@@ -1436,7 +1442,7 @@ def create_scope_version(project_id: str, payload: ScopeVersionRequest) -> dict:
     return version
 
 
-@app.post("/api/v1/projects/{project_id}/scope/versions/{version}/approve")
+@app.post("/api/v1/projects/{project_id}/scope/versions/{version}/approve", dependencies=[Depends(require_project_access)])
 def approve_scope_version(project_id: str, version: str) -> dict:
     require_demo_project(project_id)
     if project_id != CUSTOMER_PROJECT_ID:
@@ -1452,7 +1458,7 @@ def approve_scope_version(project_id: str, version: str) -> dict:
     return selected
 
 
-@app.post("/api/v1/projects/{project_id}/scope/extract")
+@app.post("/api/v1/projects/{project_id}/scope/extract", dependencies=[Depends(require_project_access)])
 async def extract_scope(project_id: str, file: UploadFile = File(...)) -> dict:
     require_demo_project(project_id)
     if project_id != CUSTOMER_PROJECT_ID:
@@ -1467,7 +1473,7 @@ async def extract_scope(project_id: str, file: UploadFile = File(...)) -> dict:
     return result
 
 
-@app.get("/api/v1/projects/{project_id}/readiness")
+@app.get("/api/v1/projects/{project_id}/readiness", dependencies=[Depends(require_project_access)])
 def readiness(project_id: str) -> dict:
     project_or_404(project_id)
     project_requirements = canonical_requirements(project_id)
@@ -1480,7 +1486,7 @@ def readiness(project_id: str) -> dict:
     return {"release": project.get("release", ""), **result.model_dump()}
 
 
-@app.get("/api/v1/projects/{project_id}/graph")
+@app.get("/api/v1/projects/{project_id}/graph", dependencies=[Depends(require_project_access)])
 def evidence_graph(project_id: str) -> dict:
     project_or_404(project_id)
     project_requirements = canonical_requirements(project_id)
@@ -1494,7 +1500,7 @@ def evidence_graph(project_id: str) -> dict:
     return {"nodes": nodes, "relationships": relationships, "questions": {"requirements_without_evidence": sum(not any(e.requirement_id == req.id for e in project_evidence) for req in project_requirements), "requirements_with_evidence": sum(any(e.requirement_id == req.id for e in project_evidence) for req in project_requirements)}}
 
 
-@app.post("/api/v1/projects/{project_id}/file-inspections")
+@app.post("/api/v1/projects/{project_id}/file-inspections", dependencies=[Depends(require_project_access)])
 def file_inspection(project_id: str, payload: FileInspectionRequest) -> dict:
     require_demo_project(project_id)
     try:
@@ -1514,7 +1520,7 @@ def file_inspection(project_id: str, payload: FileInspectionRequest) -> dict:
     return result
 
 
-@app.post("/api/v1/projects/{project_id}/human-evidence")
+@app.post("/api/v1/projects/{project_id}/human-evidence", dependencies=[Depends(require_project_access)])
 def add_human_evidence(project_id: str, payload: HumanEvidenceRequest) -> dict:
     require_demo_project(project_id)
     if not any(req.id == payload.requirement_id for req in canonical_requirements(project_id)):
@@ -1525,7 +1531,7 @@ def add_human_evidence(project_id: str, payload: HumanEvidenceRequest) -> dict:
     return item
 
 
-@app.post("/api/v1/projects/{project_id}/bug-change-assessment", response_model=BugChangeAssessment)
+@app.post("/api/v1/projects/{project_id}/bug-change-assessment", response_model=BugChangeAssessment, dependencies=[Depends(require_project_access)])
 def bug_change_assessment(project_id: str, payload: BugChangeRequest) -> BugChangeAssessment:
     require_demo_project(project_id)
     report = payload.report.lower()
@@ -1546,12 +1552,12 @@ def bug_change_assessment(project_id: str, payload: BugChangeRequest) -> BugChan
     return BugChangeAssessment(classification=classification, confidence=confidence, reason=reason, compared_scope_version=compared_scope_version, related_requirement_ids=[str(item) for item in payload.requirement_ids])
 
 
-@app.get("/api/v1/projects/{project_id}/acceptance")
+@app.get("/api/v1/projects/{project_id}/acceptance", dependencies=[Depends(require_project_access)])
 def acceptance(project_id: str) -> list[dict]:
     return canonical_acceptance(project_id)
 
 
-@app.post("/api/v1/projects/{project_id}/acceptance/{requirement_id}")
+@app.post("/api/v1/projects/{project_id}/acceptance/{requirement_id}", dependencies=[Depends(require_project_access)])
 def decide_acceptance(project_id: str, requirement_id: UUID, payload: AcceptanceDecisionRequest) -> dict:
     require_demo_project(project_id)
     project_acceptance = canonical_acceptance(project_id)
@@ -1563,12 +1569,12 @@ def decide_acceptance(project_id: str, requirement_id: UUID, payload: Acceptance
     return item
 
 
-@app.get("/api/v1/projects/{project_id}/attention")
+@app.get("/api/v1/projects/{project_id}/attention", dependencies=[Depends(require_project_access)])
 def attention(project_id: str) -> list[dict]:
     return canonical_attention(project_id)
 
 
-@app.post("/api/v1/projects/{project_id}/prepare-delivery")
+@app.post("/api/v1/projects/{project_id}/prepare-delivery", dependencies=[Depends(require_project_access)])
 def prepare_delivery(project_id: str) -> dict:
     project_or_404(project_id)
     if project_id != CUSTOMER_PROJECT_ID:
@@ -1580,7 +1586,7 @@ def prepare_delivery(project_id: str) -> dict:
     return {"release": store.project["release"], "ready": all(check["status"] == "ready" for check in checks), "checks": checks, "next_actions": ["Review CR-001", "Run missing verification for REQ-010", "Resolve client comment"]}
 
 
-@app.get("/api/v1/projects/{project_id}/audit")
+@app.get("/api/v1/projects/{project_id}/audit", dependencies=[Depends(require_project_access)])
 def audit(project_id: str) -> list[dict]:
     project_or_404(project_id)
     return [item for item in store.audit_events if item.get("project_id", project_id) == project_id]
