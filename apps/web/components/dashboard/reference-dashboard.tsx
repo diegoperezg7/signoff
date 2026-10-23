@@ -824,10 +824,10 @@ export function ReferenceDashboard() {
             onClick={() => setProfileOpen((value) => !value)}
             aria-expanded={profileOpen}
           >
-            <Avatar variant="owner" initials="AR" />
+            <Avatar variant="owner" initials="DO" />
             <span>
               <strong>{currentData.project.client}</strong>
-              <small>Alex Rivera</small>
+              <small>Demo owner</small>
             </span>
             <ChevronDown size={15} />
           </button>
@@ -956,7 +956,7 @@ export function ReferenceDashboard() {
               onClick={() => setProfileOpen((value) => !value)}
               aria-label={t("settings")}
             >
-              <Avatar variant="owner" initials="AR" />
+              <Avatar variant="owner" initials="DO" />
               <ChevronDown size={14} />
             </button>
           </div>
@@ -1718,14 +1718,14 @@ function GlobalSurface({
       {surface === "teams" && (
         <div className="reference-global-grid">
           <article className="reference-card reference-team-card">
-            <Avatar variant="owner" initials="AR" />
-            <h2>Alex Rivera</h2>
+            <Avatar variant="owner" initials="DO" />
+            <h2>Demo owner</h2>
             <p>Owner · {data.project.client}</p>
           </article>
           <article className="reference-card reference-team-card">
-            <Avatar variant="maria" initials="ML" />
-            <h2>María López</h2>
-            <p>Client reviewer · {data.project.client}</p>
+            <Avatar variant="maria" initials="CR" />
+            <h2>Client reviewer</h2>
+            <p>Reviewer · {data.project.client}</p>
           </article>
         </div>
       )}
@@ -2363,7 +2363,7 @@ function RequirementDrawer({
   const [moreOpen, setMoreOpen] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [comments, setComments] = useState([
-    "John Smith · CSV export needs an audit note.",
+    "Reviewer · CSV export needs an audit note.",
   ]);
   const isReferenceDetail = requirement.id === "REQ-041";
   const criteria = isReferenceDetail
@@ -2388,7 +2388,7 @@ function RequirementDrawer({
     if (!value) return;
     setComments((items) => [
       ...items,
-      `Alex Rivera · ${value}`,
+      `Demo owner · ${value}`,
     ]);
     setCommentDraft("");
     notify(locale === "es" ? "Comentario añadido" : "Comment added");
@@ -2755,7 +2755,7 @@ function Detail({
       <strong
         className={`${accent ? "is-accent" : ""} ${tone} ${owner ? "is-owner" : ""}`}
       >
-        {owner && <Avatar variant="maria" initials="ML" />}
+        {owner && <Avatar variant="maria" initials="CR" />}
         {value}
       </strong>
     </div>

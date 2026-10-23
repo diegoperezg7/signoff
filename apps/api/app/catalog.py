@@ -92,7 +92,7 @@ def _acme_detail(row: dict[str, Any]) -> dict[str, Any]:
             "id": "REQ-041", "status": "agreed", "version": "v1.2", "title": "Admin can export user data",
             "description": "As an admin, I want to export user data in CSV format so that I can perform external analysis.",
             "type": "Functional", "priority": "High", "component": "User Management", "baseline": "BR-1.4",
-            "created": "Apr 18, 2025", "agreed": "Apr 22, 2025", "owner": "María López",
+            "created": "Apr 18, 2025", "agreed": "Apr 22, 2025", "owner": "Client reviewer",
             "criteria": [
                 "Export includes all user fields as defined in the data dictionary",
                 "CSV file is downloadable from the admin panel",
@@ -104,7 +104,7 @@ def _acme_detail(row: dict[str, Any]) -> dict[str, Any]:
         "id": row["id"], "status": row["status"], "version": "v1.0", "title": row["title"],
         "description": f"The delivery must demonstrate: {row['title']}.", "type": "Functional", "priority": "Medium",
         "component": "Client Portal", "baseline": "BR-1.4", "created": "Apr 18, 2025", "agreed": "Apr 22, 2025",
-        "owner": "María López", "criteria": [f"The {row['title'].lower()} flow is available", "The expected outcome is visible to the client"],
+        "owner": "Client reviewer", "criteria": [f"The {row['title'].lower()} flow is available", "The expected outcome is visible to the client"],
     }
 
 
@@ -183,7 +183,7 @@ class ProjectCatalog:
                 "project": {"id": ACME_PROJECT_ID, "name": "Acme Inc.", "client": "Acme Inc.", "release": "Release 2.3", "version": "2.3.0", "status": "in_signoff", "created_at": "2025-05-12T00:00:00Z", "target_date": "2025-05-30T00:00:00Z"},
                 "metrics": {"requirements": {"value": 86, "items": [{"value": 74, "tone": "success", "label": "agreed"}, {"value": 8, "tone": "warning", "label": "pending"}, {"value": 4, "tone": "neutral", "label": "out of scope"}]}, "verification": {"value": 82, "suffix": "%", "items": [{"value": 71, "tone": "success", "label": "passed"}, {"value": 11, "tone": "error", "label": "failed"}, {"value": 4, "tone": "progress", "label": "in progress"}]}, "coverage": {"value": 95, "suffix": "%", "items": [{"value": 6, "tone": "success", "label": "vs last release"}]}, "changes": {"value": 12, "items": [{"value": 8, "tone": "success", "label": "approved"}, {"value": 2, "tone": "warning", "label": "pending"}, {"value": 2, "tone": "error", "label": "rejected"}]}},
                 "requirements": rows[:5], "selected_requirement": _acme_detail(selected),
-                "activity": [{"avatar": "maria", "author": "María López", "text": "approved change CHG-021", "time": "2h ago"}, {"avatar": "system", "author": "System", "text": "verified 5 requirements", "time": "5h ago"}, {"avatar": "john", "author": "John Smith", "text": "commented on REQ-041", "time": "1d ago"}],
+                "activity": [{"avatar": "maria", "author": "Client reviewer", "text": "approved change CHG-021", "time": "2h ago"}, {"avatar": "system", "author": "System", "text": "verified 5 requirements", "time": "5h ago"}, {"avatar": "john", "author": "Reviewer", "text": "commented on REQ-041", "time": "1d ago"}],
                 "verification_status": [{"name": "Passed", "value": 71, "tone": "success"}, {"name": "Failed", "value": 11, "tone": "error"}, {"name": "In progress", "value": 4, "tone": "progress"}, {"name": "Not started", "value": 4, "tone": "neutral"}],
                 "coverage_trend": [68, 70, 69, 71, 73, 72, 74, 77, 79, 82, 88, 95],
             }

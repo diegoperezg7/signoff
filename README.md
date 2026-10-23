@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/diegoperezg7/signoff/actions/workflows/ci.yml"><img src="https://github.com/diegoperezg7/signoff/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-All%20rights%20reserved-blue.svg" alt="All rights reserved"></a>
 </p>
 
 <p align="center">Prove what was agreed, what changed, what was delivered and what the client accepted.</p>
@@ -130,4 +130,6 @@ Hosted and self-hosted models are selected by provider id (`hosted-a`, `hosted-b
 
 ## License
 
-[MIT](LICENSE).
+Proprietary. Copyright (c) 2026 Diego Pérez. All rights reserved.
+
+See [LICENSE](LICENSE). The source may be viewed for evaluation only. Production use, copying, modification and redistribution require prior written permission.

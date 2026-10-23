@@ -39,7 +39,7 @@ class PostgresRepository:
                 session.add(organization)
             owner = session.scalar(select(User).where(User.id == stable_uuid("demo-owner")))
             if owner is None:
-                owner = User(id=stable_uuid("demo-owner"), email="owner@demo.sda", display_name="Alex Rivera")
+                owner = User(id=stable_uuid("demo-owner"), email="owner@demo.sda", display_name="Demo owner")
                 session.add(owner)
                 session.add(Membership(id=stable_uuid("membership-demo-owner"), organization_id=organization.id, user_id=owner.id, role="owner"))
             for item in catalog.list_projects():

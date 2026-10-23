@@ -59,7 +59,7 @@ class ResendEmailProvider:
 
     def send_agent_alert(self, **kwargs: Any) -> dict[str, Any]:
         if not self.api_key:
-            raise RuntimeError("RESEND_API_KEY is required for Resend email delivery")
+            raise RuntimeError("RESEND_API_KEY is required for outbound email delivery")
         body = _payload(from_address=self.from_address, **kwargs)
         if self.reply_to:
             body["reply_to"] = self.reply_to
@@ -72,7 +72,7 @@ class ResendEmailProvider:
 
     def send_review_otp(self, **kwargs: Any) -> dict[str, Any]:
         if not self.api_key:
-            raise RuntimeError("RESEND_API_KEY is required for Resend email delivery")
+            raise RuntimeError("RESEND_API_KEY is required for outbound email delivery")
         body = {"from": self.from_address, "to": [kwargs["to"]], "subject": "Your Signoff review code", "html": f"<p>Your Signoff verification code is <strong>{kwargs['code']}</strong>.</p><p>It expires in 10 minutes. If you did not request this code, you can ignore this message.</p>"}
         if self.reply_to:
             body["reply_to"] = self.reply_to
