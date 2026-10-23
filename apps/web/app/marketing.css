@@ -63,6 +63,9 @@
 .marketing-nav nav { gap: 25px; }
 .marketing-nav nav a { gap: 7px; color: #667085; font-size: 13px; font-weight: 650; text-decoration: none; transition: color .18s ease; }
 .marketing-nav nav a:hover { color: #175cd3; }
+.marketing-theme-button { padding: 7px 11px; border: 1px solid #d0d5dd; border-radius: 10px; color: #667085; background: #fff; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; transition: color .18s ease, border-color .18s ease; }
+.marketing-theme-button:hover { color: #175cd3; border-color: #b2ccff; }
+.marketing .button { text-decoration: none; }
 .marketing-signin { gap: 7px; padding: 10px 14px; border: 1px solid #d0d5dd; border-radius: 10px; color: #344054 !important; background: #fff; box-shadow: 0 2px 6px rgba(16, 24, 40, .04); }
 
 .marketing-hero {
@@ -164,6 +167,8 @@
 .marketing.theme-dark .marketing-brand img { content: normal; }
 .marketing.theme-dark .marketing-nav nav a { color: #94a3b8; }
 .marketing.theme-dark .marketing-nav nav a:hover { color: #a5b4fc; }
+.marketing.theme-dark .marketing-theme-button { color: #94a3b8; border-color: #30304a; background: #1e1e2e; }
+.marketing.theme-dark .marketing-theme-button:hover { color: #a5b4fc; }
 .marketing.theme-dark .marketing-signin { color: #e2e8f0 !important; border-color: #30304a; background: #1e1e2e; }
 .marketing.theme-dark .marketing-hero h1,
 .marketing.theme-dark .marketing-section-heading h2 { color: #f8fafc; }
@@ -187,6 +192,10 @@
 .marketing.theme-dark .flow-step small,
 .marketing.theme-dark .visual-badge span small { color: #94a3b8; }
 .marketing.theme-dark .marketing-footer { border-color: #30304a; }
+.marketing.theme-dark .visual-proof { border-color: rgba(18, 183, 106, .35); background: rgba(18, 183, 106, .08); }
+.marketing.theme-dark .visual-proof.warning { border-color: rgba(247, 144, 9, .35); background: rgba(247, 144, 9, .08); }
+.marketing.theme-dark .visual-proof small { color: #94a3b8; }
+.marketing.theme-dark .button.ghost { color: #e2e8f0; border-color: #30304a; background: #1e1e2e; }
 
 @media (max-width: 900px) {
   .marketing-hero { grid-template-columns: 1fr; gap: 30px; padding-top: 55px; }
