@@ -6,6 +6,9 @@
 - Fixed text buttons in project, template and baseline cards, and tab content being pushed below the requirement drawer.
 - Derived the failed verification count, release status card and next decision from the active release instead of fixed text.
 - Kept the coverage trend inside its metric card.
+- Compacted the workspace header on phones and showed the full wordmark in the mobile sidebar and review portal.
+- Styled the landing theme toggle and fixed the dark mode proof cards and secondary button.
+- Summarized agent tool outputs in the agent panel instead of showing raw JSON.
 - Replaced the screenshots with a light-theme walkthrough and an animated tour, and documented the agents, request path, evidence links and verification flow with diagrams.
 
 ## 0.3.0 — 2026-08-19 — Contextual agents and privacy controls
