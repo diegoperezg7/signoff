@@ -2755,7 +2755,17 @@ function Detail({
       <strong
         className={`${accent ? "is-accent" : ""} ${tone} ${owner ? "is-owner" : ""}`}
       >
-        {owner && <Avatar variant="reviewer" initials="CR" />}
+        {owner && (
+          <Avatar
+            variant={/reviewer/i.test(value) ? "reviewer" : "owner"}
+            initials={value
+              .split(" ")
+              .map((word) => word[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()}
+          />
+        )}
         {value}
       </strong>
     </div>
