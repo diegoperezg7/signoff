@@ -980,7 +980,15 @@ export function ReferenceDashboard() {
               <span className="context-indicator context-indicator-warning" />
               <span>
                 <small>{isEs ? "Siguiente decisión" : "Next decision"}</small>
-                <strong>{isEs ? "Aprobación del cliente" : "Client sign-off"}</strong>
+                <strong>
+                  {releaseStatus === "accepted"
+                    ? isEs
+                      ? "Cerrar el release"
+                      : "Close the release"
+                    : isEs
+                      ? "Aprobación del cliente"
+                      : "Client sign-off"}
+                </strong>
               </span>
             </div>
             <button className="reference-context-action" onClick={() => selectTab("verification")}>
@@ -1100,6 +1108,8 @@ export function ReferenceDashboard() {
                   data={currentData}
                   requirements={filteredRequirements}
                   selectedId={selectedId}
+                  statusLabel={statusLabel}
+                  accepted={releaseStatus === "accepted"}
                   onSelect={selectRequirement}
                   onOpenTab={selectTab}
                   t={t}
@@ -1116,6 +1126,7 @@ export function ReferenceDashboard() {
                   onOpenPortal={openPortal}
                   verificationRunning={verificationRunning}
                   releaseSent={releaseSent}
+                  statusLabel={statusLabel}
                   projectId={projectId}
                   aiRunning={aiRunning}
                   deliveryChecks={deliveryChecks}
@@ -1798,6 +1809,8 @@ function Overview({
   data,
   requirements,
   selectedId,
+  statusLabel,
+  accepted,
   onSelect,
   onOpenTab,
   t,
@@ -1805,6 +1818,8 @@ function Overview({
   data: DashboardData;
   requirements: RequirementRow[];
   selectedId: string;
+  statusLabel: string;
+  accepted: boolean;
   onSelect: (id: string) => void;
   onOpenTab: (tab: Tab) => void;
   t: Translate;
@@ -1851,7 +1866,12 @@ function Overview({
               onSelect={onSelect}
               t={t}
             />
-            <RequirementStatusCard selectedId={selectedId} t={t} />
+            <RequirementStatusCard
+              selectedId={selectedId}
+              statusLabel={statusLabel}
+              accepted={accepted}
+              t={t}
+            />
           </div>
           <div className="reference-bottom-grid">
             <ActivityCard items={data.activity} onOpenTab={onOpenTab} t={t} />
@@ -2146,24 +2166,30 @@ function CoverageBar({ value }: { value: number }) {
 
 function RequirementStatusCard({
   selectedId,
+  statusLabel,
+  accepted,
   t,
 }: {
   selectedId: string;
+  statusLabel: string;
+  accepted: boolean;
   t: Translate;
 }) {
   return (
     <article className="reference-card reference-requirement-status-card">
       <span className="reference-status-card-id">{selectedId}</span>
-      <span className="reference-status-card-pill">{t("inSignoff")}</span>
+      <span className="reference-status-card-pill">{statusLabel}</span>
       <div className="reference-status-card-ring">
         <Check size={18} />
       </div>
       <p>
-        {localeText(
-          t,
-          "Waiting for client approval",
-          "Esperando aprobación del cliente",
-        )}
+        {accepted
+          ? localeText(t, "Accepted by the client", "Aceptado por el cliente")
+          : localeText(
+              t,
+              "Waiting for client approval",
+              "Esperando aprobación del cliente",
+            )}
       </p>
     </article>
   );
@@ -2801,6 +2827,7 @@ function TabView({
   verificationRunning,
   aiRunning,
   releaseSent,
+  statusLabel,
   deliveryChecks,
   notify,
   t,
@@ -2819,6 +2846,7 @@ function TabView({
   verificationRunning: boolean;
   aiRunning: boolean;
   releaseSent: boolean;
+  statusLabel: string;
   deliveryChecks: {
     ready: boolean;
     checks: { key: string; label: string; status: string; detail: string }[];
@@ -2990,7 +3018,7 @@ function TabView({
             ? locale === "es"
               ? "Enviado a aprobación"
               : "Sent for acceptance"
-            : t("inSignoff")}
+            : statusLabel}
         </span>
       </div>
       <div className="reference-tab-actions">
