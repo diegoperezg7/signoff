@@ -195,9 +195,26 @@ function humanizeAgentKey(key: string, locale: "en" | "es") {
 function formatAgentValue(value: unknown, locale: "en" | "es") {
   if (typeof value === "boolean") return value ? (locale === "es" ? "Sí" : "Yes") : (locale === "es" ? "No" : "No");
   if (typeof value === "number" && value >= 0 && value <= 1) return `${Math.round(value * 100)}%`;
-  if (Array.isArray(value)) return value.slice(0, 2).map((item) => typeof item === "string" ? item : JSON.stringify(item)).join(" · ");
-  if (typeof value === "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return formatAgentList(value, locale);
+  if (typeof value === "object" && value !== null) return describeAgentItem(value as Record<string, unknown>, locale);
   return String(value);
+}
+
+function formatAgentList(items: unknown[], locale: "en" | "es") {
+  if (!items.length) return locale === "es" ? "Ninguno" : "None";
+  const labels = items.map((item) => typeof item === "object" && item !== null ? describeAgentItem(item as Record<string, unknown>, locale) : String(item));
+  const head = labels.slice(0, 2).join(" · ");
+  return items.length > 2 ? `${head} +${items.length - 2}` : head;
+}
+
+function describeAgentItem(item: Record<string, unknown>, locale: "en" | "es"): string {
+  const label = ["title", "text", "recommendation", "artifact", "delivered", "state"].map((key) => item[key]).find((value) => typeof value === "string");
+  if (typeof label === "string") return typeof item.human_id === "string" ? `${item.human_id} · ${label}` : label;
+  if (typeof item.score === "number") return `${item.score}/100`;
+  const list = Object.values(item).find(Array.isArray);
+  if (list) return formatAgentList(list, locale);
+  const fields = Object.keys(item).length;
+  return locale === "es" ? `${fields} campos` : `${fields} fields`;
 }
 
 function AgentAvatar({ agentId }: { agentId: string }) {
