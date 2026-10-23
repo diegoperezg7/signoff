@@ -35,14 +35,6 @@ The demo ships two synthetic projects on the same workspace: **Acme Inc. / Relea
   <img src="docs/images/dashboard-light.png" alt="The same dashboard in light mode" width="920">
 </p>
 
-<p align="center">
-  <img src="docs/images/dashboard-mobile.png" alt="Signoff dashboard on a phone-width viewport" width="390">
-</p>
-
-<p align="center">
-  <img src="docs/images/review-portal.png" alt="Client review portal with the delivery summary and evidence index" width="920">
-</p>
-
 ## Architecture
 
 ```mermaid
