@@ -8,6 +8,6 @@ The browser agent is designed as a state machine: planner → isolated Playwrigh
 
 The delivery graph is relational: Agreement → ScopeVersion → Requirement → AcceptanceCriterion → DeliveryReference → VerificationRun → EvidenceArtifact → DeliveryRelease → AcceptanceDecision. SQLAlchemy models cover identity, tenant membership, source documents, criteria, changes, verification steps/results, comments, delivery packs, integrations, audit events and LLM runs.
 
-AI work is exposed through the same `LLMProvider` methods in mock and production modes. `OpenAIProvider` uses structured JSON schema responses, `store=false` and creates an auditable draft proposal before human approval. Long-running work has a `JobRunner` boundary and Dramatiq actors for Redis deployments.
+AI work uses the same `LLMProvider` methods in mock and production modes. The hosted adapter requests structured JSON, asks the provider not to retain the payload, and stores an auditable draft proposal until a person approves it. Long-running work has a `JobRunner` boundary and worker actors for Redis deployments.
 
 Recommended deployment is Vercel for `apps/web`, a managed container platform for API/worker, managed PostgreSQL, Redis and R2/S3. Jobs must be idempotent and scoped by organization and project.

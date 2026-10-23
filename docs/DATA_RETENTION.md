@@ -12,5 +12,9 @@ Recommended defaults:
 - prompts and raw model responses: disabled by default;
 - audit events: configurable by organization and protected from ordinary edits.
 
+Blank or non-numeric retention settings fall back to these defaults. A negative
+number is treated as zero. Deletion removes the stored object and keeps only a
+metadata audit event: no filename, hash or document text.
+
 Deletion workflows must remove originals, extracted text, redacted text,
 derived artifacts and delivery exports, then record a non-sensitive audit event.

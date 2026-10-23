@@ -10,7 +10,7 @@
 - Delivery Readiness and Delivery Pack.
 - Client Acceptance Portal.
 - Two real demo projects through one project/release API and shared workspace.
-- Mock/OpenAI provider parity, PostgreSQL adapter, signed evidence links and worker boundaries.
+- Mock and hosted LLM provider parity, PostgreSQL adapter, signed evidence links and worker boundaries.
 
 ## P0 — Production hardening
 

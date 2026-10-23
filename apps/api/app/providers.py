@@ -62,19 +62,29 @@ class MockLLMProvider:
         return {"promised": context.get("promised", "Approved delivery scope"), "delivered": context.get("delivered", "Evidence-linked delivery"), "changed": context.get("changed", "No unapproved changes"), "remaining": context.get("remaining", "Review open items"), "approval": context.get("approval", "Awaiting client acceptance")}
 
 
-class OpenAIProvider:
-    """OpenAI Responses API adapter with strict JSON-schema responses."""
-    provider_name = "openai"
+def _env_value(*names: str) -> str:
+    for name in names:
+        value = os.getenv(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+class HostedLLMProvider:
+    """Hosted model adapter with strict JSON-schema responses."""
+    provider_name = "hosted-a"
 
     def __init__(self, model: str | None = None, api_key: str | None = None) -> None:
-        self.model = model or os.getenv("OPENAI_MODEL", "gpt-5-mini")
-        key = api_key or os.getenv("OPENAI_API_KEY", "")
+        self.model = model or _env_value("LLM_MODEL")
+        key = api_key or _env_value("LLM_API_KEY")
         if not key:
-            raise RuntimeError("OPENAI_API_KEY is required when MOCK_MODE=false")
+            raise RuntimeError("LLM_API_KEY is required when MOCK_MODE=false")
+        if not self.model:
+            raise RuntimeError("LLM_MODEL is required when MOCK_MODE=false")
         try:
             from openai import OpenAI
         except ImportError as exc:
-            raise RuntimeError("Install the openai package to enable real AI mode") from exc
+            raise RuntimeError("Install the LLM client package to enable a hosted model") from exc
         self.client = OpenAI(api_key=key)
 
     def _json(self, task: str, payload: Any, schema: dict[str, Any]) -> dict[str, Any]:
@@ -111,24 +121,30 @@ class OpenAIProvider:
         return self._json("summarize-delivery", context, {"type": "object", "properties": {"promised": {"type": "string"}, "delivered": {"type": "string"}, "changed": {"type": "string"}, "remaining": {"type": "string"}, "approval": {"type": "string"}}, "required": ["promised", "delivered", "changed", "remaining", "approval"], "additionalProperties": False})
 
 
-class OpenRouterProvider(OpenAIProvider):
-    """OpenRouter gateway using its OpenAI-compatible chat API.
+class GatewayLLMProvider(HostedLLMProvider):
+    """Optional hosted or self-hosted gateway that speaks a compatible chat API.
 
-    OpenRouter is opt-in because model routing and data residency depend on the
-    selected route. The organization policy must explicitly allow `openrouter`.
+    This route is opt-in. Model routing and data residency depend on the
+    configured base URL, so the organization policy must allow the provider id.
     """
-    provider_name = "openrouter"
+    provider_name = "hosted-b"
 
-    def __init__(self, model: str | None = None, api_key: str | None = None) -> None:
-        self.model = model or os.getenv("OPENROUTER_MODEL", "openai/gpt-5-mini")
-        key = api_key or os.getenv("OPENROUTER_API_KEY", "")
+    def __init__(self, model: str | None = None, api_key: str | None = None, provider_id: str = "hosted-b") -> None:
+        self.provider_name = provider_id
+        self.model = model or _env_value("LLM_MODEL")
+        key = api_key or _env_value("LLM_API_KEY")
+        base_url = _env_value("LLM_BASE_URL")
         if not key:
-            raise RuntimeError("OPENROUTER_API_KEY is required for the OpenRouter gateway")
+            raise RuntimeError("LLM_API_KEY is required for this model route")
+        if not self.model:
+            raise RuntimeError("LLM_MODEL is required for this model route")
+        if not base_url:
+            raise RuntimeError("LLM_BASE_URL is required for this model route")
         try:
             from openai import OpenAI
         except ImportError as exc:
-            raise RuntimeError("Install the openai package to enable OpenRouter") from exc
-        self.client = OpenAI(api_key=key, base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"), default_headers={"HTTP-Referer": os.getenv("SIGNOFF_APP_URL", "http://localhost:3000"), "X-Title": "Signoff"})
+            raise RuntimeError("Install the LLM client package to enable this model route") from exc
+        self.client = OpenAI(api_key=key, base_url=base_url, default_headers={"HTTP-Referer": os.getenv("SIGNOFF_APP_URL", "http://localhost:3000"), "X-Title": "Signoff"})
 
     def _json(self, task: str, payload: Any, schema: dict[str, Any]) -> dict[str, Any]:
         response = self.client.chat.completions.create(

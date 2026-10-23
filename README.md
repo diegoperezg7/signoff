@@ -1,42 +1,133 @@
-# Signoff
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/brand/signoff-lockup-dark-transparent.png">
+    <img src="apps/web/public/brand/signoff-lockup-light-transparent.png" alt="Signoff, software delivery assurance" width="460">
+  </picture>
+</p>
 
-Signoff is the operating system for proving software delivery. It connects Agreement, Build, Change, Verify, Evidence and Accept without replacing Jira, GitHub or existing QA tools.
+<p align="center">
+  <a href="https://github.com/diegoperezg7/signoff/actions/workflows/ci.yml"><img src="https://github.com/diegoperezg7/signoff/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+</p>
 
-## Run locally
+<p align="center">Prove what was agreed, what changed, what was delivered and what the client accepted.</p>
 
-Requirements: Python 3.11+ and Node 20.9+.
+Signoff is a browser workspace for software delivery assurance. It keeps the path from an agreement to client acceptance in one trace, without replacing the tracker, the repository or the test suite a team already uses.
 
-```bash
-make up              # full stack: API, web, worker, Postgres and Redis
+## Product
+
+| Step | What you can show |
+| --- | --- |
+| Agreement | Import a scope document and freeze a baseline. |
+| Requirements | Review atomic requirements and draft acceptance criteria. |
+| Change | Classify a report as a defect, a scope change or something a person must decide. |
+| Verify | Run a bounded check: simulated browser steps, file inspection or human evidence. |
+| Evidence | Store hashed artifacts and open them through short-lived signed links. |
+| Accept | Send a tokenized review portal and record the client decision. |
+
+The demo ships two synthetic projects on the same workspace: **Acme Inc. / Release 2.3** for the visual sign-off state, and **Customer Operations Portal v1 / Release 1.0** for the functional flow. Nothing in the seed is a real customer.
+
+<p align="center">
+  <img src="docs/images/dashboard-dark.png" alt="Signoff dashboard in dark mode, Acme Inc. Release 2.3" width="920">
+</p>
+
+<p align="center">
+  <img src="docs/images/dashboard-light.png" alt="The same dashboard in light mode" width="920">
+</p>
+
+<p align="center">
+  <img src="docs/images/dashboard-mobile.png" alt="Signoff dashboard on a phone-width viewport" width="390">
+</p>
+
+<p align="center">
+  <img src="docs/images/review-portal.png" alt="Client review portal with the delivery summary and evidence index" width="920">
+</p>
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph browser [Browser]
+    Landing[Public landing]
+    Workspace[Project workspace]
+    Portal[Client review portal]
+  end
+  subgraph services [Services]
+    API[FastAPI]
+    Worker[Background worker]
+  end
+  Landing --> Workspace
+  Workspace --> API
+  Portal --> API
+  API --> Policy[Privacy policy]
+  API --> Verify[Verification engine]
+  Verify --> Evidence[Signed evidence]
+  API --> DB[(PostgreSQL)]
+  API --> Queue[(Redis)]
+  Worker --> Queue
 ```
 
-For a lightweight mock-only loop, run `make api` and `make web` in separate terminals.
+Mock mode keeps the catalog in memory and uses a deterministic local model, so the demo and CI need no external keys. Production mode uses the same API with PostgreSQL, a worker, object storage and an allowlisted model provider. See [Architecture](docs/ARCHITECTURE.md) and [AI provider policy](docs/AI_PROVIDER_POLICY.md).
 
-Then open [http://localhost:3000](http://localhost:3000). Signoff is a browser-based SaaS: no desktop download is required. The public landing lives at `/`; select **Open demo workspace** to enter `/dashboard`. The workspace has two shared-architecture demos: `Acme Inc. / Release 2.3` for the visual sign-off state and `Customer Operations Portal v1 / Release 1.0` for the functional flow. The client-facing review portals are available at `/review/acme-review-token` and `/review/demo-review-token`. The API is available at [http://localhost:8000/docs](http://localhost:8000/docs).
+## Delivery flow
 
-The default `MOCK_MODE=true` requires no external keys. Both demo projects are seeded deterministically in the mock catalog on startup. Set `NEXT_PUBLIC_SDA_API_URL` at web build time to point the browser at another API. With `MOCK_MODE=false`, the API initializes the SQLAlchemy/PostgreSQL catalog, validates Supabase-style JWTs signed with `SUPABASE_JWT_SECRET`, uses `OpenAIProvider` when `OPENAI_API_KEY` is configured and can use S3/R2 through the storage adapter.
-
-## Useful commands
-
-```bash
-make api       # FastAPI development server
-make web       # Next.js development server
-make test      # API tests
-make lint      # Python compile check and frontend lint
+```mermaid
+flowchart LR
+  A[Agreement] --> B[Scope baseline]
+  B --> C[Requirements]
+  C --> D[Change radar]
+  D --> E[Verification]
+  E --> F[Evidence]
+  F --> G[Delivery pack]
+  G --> H[Client acceptance]
 ```
 
-This repository contains the consolidated product flow: public landing, shared multi-project workspace, project/release URL context, agreement extraction mock, frozen scope versions, requirements and acceptance criteria, interactive Change Radar, Verification Engine boundary, File Inspector, Evidence Graph, Delivery Readiness, downloadable Delivery Pack, tokenized client review portal, structured AI proposals, signed evidence links and cost telemetry. Signoff Intelligence now includes contextual specialist agents, supervisor dispatch, grounded project Q&A and a bounded QA Explorer that checks allowed local routes and stores observation artifacts.
+A model may draft criteria, a verification plan or a change classification. Those drafts stay unapproved until a person accepts them. Readiness is a delivery signal, not a legal conclusion.
 
-## Brand system
+## Quickstart
 
-The Signoff identity is available in reusable light/dark lockups and mark variants under `apps/web/public/brand`. The interface uses the source palette: Primary `#6366F1`, Indigo `#4F46E5`, Deep `#312E81`, Navy `#0F172A`, Slate `#1E1E2E`, Gray `#94A3B8`, Light `#F8FAFC` and White `#FFFFFF`. The app includes a persistent light/dark theme switch, App Router favicon, Apple icon and web manifest.
+Docker Compose runs the API, web app, worker, PostgreSQL and Redis. The compose file uses local placeholder credentials only.
 
-## Production notes
+```bash
+cp .env.example .env
+docker compose up --build
+```
 
-Set `MOCK_MODE=false`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `DATABASE_URL`, `REDIS_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_JWT_SECRET`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `RESEND_API_KEY` and a non-default `SDA_STORAGE_SECRET` in the deployment environment. Set `RESEND_FROM_EMAIL` to a verified domain before production delivery and enable `SIGNOFF_AGENT_ALERTS_ENABLED` only when alerts are wanted. For confidential data, review `SDA_AI_ALLOWED_PROVIDERS`, `SDA_AI_REQUIRE_CONSENT`, `SDA_AI_REDACT_BEFORE_PROCESSING` and `SDA_AI_MAX_EXTERNAL_CLASSIFICATION`; the defaults require consent, redact PII/secrets and block data above `CONFIDENTIAL` for external providers. Keep `SDA_JOB_MODE=inline` for local mock work or route long-running work through the Dramatiq worker with Redis. The persistence, AI, email and storage boundaries are documented in `docs/ARCHITECTURE.md`, `docs/AI_ARCHITECTURE.md`, `docs/DATA_CLASSIFICATION.md`, `docs/AI_PROVIDER_POLICY.md` and `docs/DATA_RETENTION.md`.
+Open [http://localhost:3000](http://localhost:3000). Choose **Open workspace** for the dashboard. The review portals are `/review/acme-review-token` and `/review/demo-review-token`. The API reference is [http://localhost:8000/docs](http://localhost:8000/docs).
 
-## Documentation
+Without Docker, from a machine with Python 3.12 and Node 20:
 
-- [Architecture](docs/ARCHITECTURE.md) · [Product](docs/PRODUCT.md) · [Security](docs/SECURITY.md)
-- [AI architecture](docs/AI_ARCHITECTURE.md) · [Verification Engine](docs/VERIFICATION_ENGINE.md) · [Evidence model](docs/EVIDENCE_MODEL.md)
-- [Roadmap](docs/ROADMAP.md) · [Implementation plan](PLAN.md) · [Product reorientation](PRODUCT_REORIENTATION.md)
+```bash
+python3 -m pip install -r apps/api/requirements.txt
+cd apps/api && python3 -m uvicorn app.main:app --port 8000
+```
+
+```bash
+cd apps/web && npm install && npm run dev
+```
+
+## Tests
+
+```bash
+make test
+make lint
+```
+
+`make test` runs the API suite, including the verification engine and the policy, retention and evidence edge cases. The web job in CI builds the Next.js app.
+
+## Governance
+
+- [Data classification](docs/DATA_CLASSIFICATION.md)
+- [Data retention](docs/DATA_RETENTION.md)
+- [AI provider policy](docs/AI_PROVIDER_POLICY.md)
+- [Evidence model](docs/EVIDENCE_MODEL.md)
+- [Verification engine](docs/VERIFICATION_ENGINE.md)
+- [Security](docs/SECURITY.md)
+- [AI architecture](docs/AI_ARCHITECTURE.md) · [Contextual agents](docs/AI_AGENTS.md)
+- [Product](docs/PRODUCT.md) · [Roadmap](docs/ROADMAP.md) · [Design system](docs/DESIGN_SYSTEM.md)
+
+Hosted and self-hosted models are selected by provider id (`hosted-a`, `hosted-b`, `self-hosted`). The demo never sends project content to an external model.
+
+## License
+
+[MIT](LICENSE).

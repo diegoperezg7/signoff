@@ -824,10 +824,10 @@ export function ReferenceDashboard() {
             onClick={() => setProfileOpen((value) => !value)}
             aria-expanded={profileOpen}
           >
-            <Avatar variant="diego" initials="DP" />
+            <Avatar variant="owner" initials="AR" />
             <span>
               <strong>{currentData.project.client}</strong>
-              <small>Diego Pérez</small>
+              <small>Alex Rivera</small>
             </span>
             <ChevronDown size={15} />
           </button>
@@ -956,7 +956,7 @@ export function ReferenceDashboard() {
               onClick={() => setProfileOpen((value) => !value)}
               aria-label={t("settings")}
             >
-              <Avatar variant="diego" initials="DP" />
+              <Avatar variant="owner" initials="AR" />
               <ChevronDown size={14} />
             </button>
           </div>
@@ -1718,8 +1718,8 @@ function GlobalSurface({
       {surface === "teams" && (
         <div className="reference-global-grid">
           <article className="reference-card reference-team-card">
-            <Avatar variant="diego" initials="DP" />
-            <h2>Diego Pérez</h2>
+            <Avatar variant="owner" initials="AR" />
+            <h2>Alex Rivera</h2>
             <p>Owner · {data.project.client}</p>
           </article>
           <article className="reference-card reference-team-card">
@@ -2388,7 +2388,7 @@ function RequirementDrawer({
     if (!value) return;
     setComments((items) => [
       ...items,
-      `${locale === "es" ? "Diego Pérez" : "Diego Pérez"} · ${value}`,
+      `Alex Rivera · ${value}`,
     ]);
     setCommentDraft("");
     notify(locale === "es" ? "Comentario añadido" : "Comment added");

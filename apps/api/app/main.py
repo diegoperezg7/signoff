@@ -19,7 +19,7 @@ from .catalog import ACME_PROJECT_ID, ACME_RELEASE_ID, CUSTOMER_PROJECT_ID, CUST
 from .agents import AgentId, agent_catalog, build_plan, get_agent
 from .domain import BugChangeAssessment, EvidenceRelationship, calculate_readiness
 from .file_inspector import inspect_file
-from .providers import MockLLMProvider as ContractMockLLMProvider, OpenAIProvider, OpenRouterProvider
+from .providers import GatewayLLMProvider, HostedLLMProvider, MockLLMProvider as ContractMockLLMProvider
 from .persistence import PostgresRepository
 from .auth import CurrentUser, current_user, require_role, set_membership_validator
 from .storage import LocalStorageProvider, S3StorageProvider
@@ -555,9 +555,12 @@ def reference_dashboard() -> dict:
 def llm_provider() -> Any:
     if os.getenv("MOCK_MODE", "true").lower() == "true":
         return ContractMockLLMProvider()
-    if os.getenv("AI_PROVIDER", "openai").lower() == "openrouter":
-        return OpenRouterProvider()
-    return OpenAIProvider()
+    selected = os.getenv("LLM_PROVIDER", "hosted-a").strip().lower()
+    if selected == "self-hosted":
+        return GatewayLLMProvider(provider_id="self-hosted")
+    if selected == "hosted-b":
+        return GatewayLLMProvider(provider_id="hosted-b")
+    return HostedLLMProvider()
 
 
 def audit_event(user: CurrentUser, event_type: str, **payload: Any) -> None:
@@ -1079,11 +1082,28 @@ def revoke_ai_consent(project_id: str, document_id: str, user: CurrentUser = Dep
     return {"status": "revoked", "document_id": document_id, "revoked": revoked}
 
 
+def configured_retention_days(name: str, default: int) -> int:
+    """Read a retention window. Blank or invalid values fall back to the default."""
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return default
+
+
 @app.get("/api/v1/projects/{project_id}/privacy/retention")
 def privacy_retention(project_id: str, user: CurrentUser = Depends(current_user)) -> dict[str, Any]:
     if not catalog.get_project(project_id, user.organization_id):
         raise HTTPException(404, "Project not found")
-    return {"document_retention_days": int(os.getenv("SDA_DOCUMENT_RETENTION_DAYS", "365")), "evidence_retention_days": int(os.getenv("SDA_EVIDENCE_RETENTION_DAYS", "365")), "portal_link_days": int(os.getenv("SDA_PORTAL_LINK_RETENTION_DAYS", "7")), "llm_metadata_retention_days": int(os.getenv("SDA_LLM_METADATA_RETENTION_DAYS", "730")), "raw_prompts_stored": False}
+    return {
+        "document_retention_days": configured_retention_days("SDA_DOCUMENT_RETENTION_DAYS", 365),
+        "evidence_retention_days": configured_retention_days("SDA_EVIDENCE_RETENTION_DAYS", 365),
+        "portal_link_days": configured_retention_days("SDA_PORTAL_LINK_RETENTION_DAYS", 7),
+        "llm_metadata_retention_days": configured_retention_days("SDA_LLM_METADATA_RETENTION_DAYS", 730),
+        "raw_prompts_stored": False,
+    }
 
 
 @app.delete("/api/v1/projects/{project_id}/documents/{document_id}")
@@ -1190,8 +1210,8 @@ async def import_scope(file: UploadFile = File(...)) -> dict:
     if file.content_type == "text/plain" and b"\x00" in content[:4096]:
         raise HTTPException(400, "Text file contains binary content")
     document_id = f"doc_{secrets.token_urlsafe(12)}"
-    store.document_records[document_id] = {"id": document_id, "filename": filename, "sha256": hashlib.sha256(content).hexdigest(), "bytes": len(content), "content_type": file.content_type, "status": "quarantined", "created_at": now(), "retention_days": int(os.getenv("SDA_DOCUMENT_RETENTION_DAYS", "365"))}
-    return {"status": "draft_ready", "document_id": document_id, "filename": filename, "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(), "version": "Scope v2 (draft)", "message": "Mock extraction complete. Review the suggested requirements before confirming."}
+    store.document_records[document_id] = {"id": document_id, "filename": filename, "sha256": hashlib.sha256(content).hexdigest(), "bytes": len(content), "content_type": file.content_type, "status": "quarantined", "created_at": now(), "retention_days": configured_retention_days("SDA_DOCUMENT_RETENTION_DAYS", 365)}
+    return {"status": "draft_ready", "document_id": document_id, "filename": filename, "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(), "retention_days": store.document_records[document_id]["retention_days"], "version": "Scope v2 (draft)", "message": "Mock extraction complete. Review the suggested requirements before confirming."}
 
 
 @app.get("/api/v1/projects/{project_id}/changes", response_model=list[ChangeRequest])
@@ -1271,10 +1291,16 @@ def evidence_signed_url(project_id: str, artifact_id: str) -> dict[str, str]:
 
 @app.get("/api/v1/evidence/{key:path}")
 def get_evidence_object(key: str, expires: int, signature: str) -> Response:
-    if not storage.verify_signed_url(key, expires, signature):
+    try:
+        valid = storage.verify_signed_url(key, expires, signature)
+    except ValueError as exc:
+        raise HTTPException(400, "Unsafe evidence key") from exc
+    if not valid:
         raise HTTPException(403, "Evidence link expired or invalid")
     try:
         content = storage.get_object(key)
+    except ValueError as exc:
+        raise HTTPException(400, "Unsafe evidence key") from exc
     except FileNotFoundError as exc:
         raise HTTPException(404, "Evidence object not found") from exc
     return Response(content=content, media_type="application/octet-stream")
@@ -1377,7 +1403,7 @@ def costs(user: CurrentUser = Depends(current_user)) -> dict:
     input_tokens = sum(item["input_tokens"] for item in store.llm_runs)
     output_tokens = sum(item["output_tokens"] for item in store.llm_runs)
     estimated_cost = round(sum(item["estimated_cost"] for item in store.llm_runs) + 0.18, 4)
-    provider = "OpenAIProvider" if os.getenv("MOCK_MODE", "true").lower() != "true" else "MockLLMProvider"
+    provider = "hosted-llm" if os.getenv("MOCK_MODE", "true").lower() != "true" else "MockLLMProvider"
     return {"runs": len(store.llm_runs) + 4, "llm_tokens": {"input": input_tokens + 4820, "output": output_tokens + 1360}, "estimated_cost_eur": estimated_cost, "browser_minutes": 3.4, "provider": provider}
 
 

@@ -1,8 +1,8 @@
 """Security and privacy policy primitives for tenant-owned content.
 
 This module deliberately contains policy decisions, not provider-specific code.
-Keeping them here makes it possible to enforce the same rules for OpenAI,
-OpenRouter, private models and future verification providers.
+Keeping them here makes it possible to enforce the same rules for hosted
+providers, self-hosted models and future verification providers.
 """
 from __future__ import annotations
 
@@ -26,13 +26,15 @@ class PrivacyPolicy:
     """Tenant-independent baseline policy, configurable by deployment."""
 
     def __init__(self) -> None:
-        configured = os.getenv("SDA_AI_ALLOWED_PROVIDERS", "mock,openai")
+        configured = os.getenv("SDA_AI_ALLOWED_PROVIDERS", "mock,hosted-a")
         self.allowed_providers = {item.strip().lower() for item in configured.split(",") if item.strip()}
         self.require_consent = os.getenv("SDA_AI_REQUIRE_CONSENT", "true").lower() == "true"
         self.redact_before_ai = os.getenv("SDA_AI_REDACT_BEFORE_PROCESSING", "true").lower() == "true"
-        self.max_external_classification = DataClassification[
-            os.getenv("SDA_AI_MAX_EXTERNAL_CLASSIFICATION", "CONFIDENTIAL").upper()
-        ]
+        raw_classification = os.getenv("SDA_AI_MAX_EXTERNAL_CLASSIFICATION", "CONFIDENTIAL").upper()
+        try:
+            self.max_external_classification = DataClassification[raw_classification]
+        except KeyError:
+            self.max_external_classification = DataClassification.CONFIDENTIAL
 
     def provider_name(self, provider: Any) -> str:
         name = getattr(provider, "provider_name", None) or provider.__class__.__name__
