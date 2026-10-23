@@ -1,6 +1,6 @@
 /* Signoff product layer: shared visual language for workspace surfaces. */
 :root {
-  --signoff-font-display: var(--font-geist), Geist, system-ui, sans-serif;
+  --signoff-font-display: var(--font-geist, Geist), system-ui, sans-serif;
   --signoff-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --signoff-radius-sm: 7px;
   --signoff-radius-md: 10px;
