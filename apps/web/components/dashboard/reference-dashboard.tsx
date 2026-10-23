@@ -480,6 +480,12 @@ export function ReferenceDashboard() {
       />
     );
   const currentData = localized;
+  const failedVerifications =
+    currentData.verification_status.find((item) => item.tone === "error")
+      ?.value ?? 0;
+  const failedLabel = isEs
+    ? `${failedVerifications} ${failedVerifications === 1 ? "verificación fallida" : "verificaciones fallidas"}`
+    : `${failedVerifications} failed ${failedVerifications === 1 ? "verification" : "verifications"}`;
   const selectedRow =
     currentData.requirements.find((item) => item.id === selectedId) ||
     currentData.requirements[0];
@@ -902,11 +908,7 @@ export function ReferenceDashboard() {
                   >
                     <CircleAlert size={15} />
                     <span>
-                      <strong>
-                        {isEs
-                          ? "11 verificaciones fallidas"
-                          : "11 failed verifications"}
-                      </strong>
+                      <strong>{failedLabel}</strong>
                       <small>
                         {isEs ? "Requieren revisión" : "Need review"}
                       </small>
@@ -971,7 +973,7 @@ export function ReferenceDashboard() {
               <span className="context-indicator context-indicator-error" />
               <span>
                 <small>{isEs ? "Atención" : "Attention"}</small>
-                <strong>{isEs ? "11 verificaciones fallidas" : "11 failed verifications"}</strong>
+                <strong>{failedLabel}</strong>
               </span>
             </div>
             <div className="reference-context-item">
