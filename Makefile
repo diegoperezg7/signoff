@@ -1,4 +1,4 @@
-PYTHON ?= /usr/bin/python3
+PYTHON ?= python3
 
 .PHONY: api web dev up down test lint migrate
 
