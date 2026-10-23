@@ -276,7 +276,7 @@ function translateData(data: DashboardData, locale: Locale): DashboardData {
       activity: data.activity.map((item) => ({
         ...item,
         text:
-          item.avatar === "maria"
+          item.avatar === "owner"
             ? "ha aprobado la línea base"
             : "ha verificado los requisitos",
       })),
@@ -325,7 +325,7 @@ function translateData(data: DashboardData, locale: Locale): DashboardData {
     activity: data.activity.map((item) => ({
       ...item,
       text:
-        item.avatar === "maria"
+        item.avatar === "reviewer"
           ? "ha aprobado el cambio CHG-021"
           : item.avatar === "system"
             ? "ha verificado 5 requisitos"
@@ -1723,7 +1723,7 @@ function GlobalSurface({
             <p>Owner · {data.project.client}</p>
           </article>
           <article className="reference-card reference-team-card">
-            <Avatar variant="maria" initials="CR" />
+            <Avatar variant="reviewer" initials="CR" />
             <h2>Client reviewer</h2>
             <p>Reviewer · {data.project.client}</p>
           </article>
@@ -2755,7 +2755,7 @@ function Detail({
       <strong
         className={`${accent ? "is-accent" : ""} ${tone} ${owner ? "is-owner" : ""}`}
       >
-        {owner && <Avatar variant="maria" initials="CR" />}
+        {owner && <Avatar variant="reviewer" initials="CR" />}
         {value}
       </strong>
     </div>

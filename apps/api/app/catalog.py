@@ -142,7 +142,7 @@ def _customer_dashboard(store: Any) -> dict[str, Any]:
         },
         "requirements": requirements[:5],
         "selected_requirement": selected_requirement,
-        "activity": [{"avatar": "system", "author": "System", "text": "verified the demo requirements", "time": "Today"}, {"avatar": "maria", "author": "Demo Owner", "text": "approved Scope v1", "time": "2d ago"}],
+        "activity": [{"avatar": "system", "author": "System", "text": "verified the demo requirements", "time": "Today"}, {"avatar": "owner", "author": "Demo Owner", "text": "approved Scope v1", "time": "2d ago"}],
         "verification_status": [{"name": "Passed", "value": demonstrated, "tone": "success"}, {"name": "Failed", "value": not_demonstrated, "tone": "error"}, {"name": "In progress", "value": partial, "tone": "progress"}, {"name": "Not started", "value": 0, "tone": "neutral"}],
         "coverage_trend": [42, 48, 53, 59, 64, 72, 78, 83],
     }
@@ -183,7 +183,7 @@ class ProjectCatalog:
                 "project": {"id": ACME_PROJECT_ID, "name": "Acme Inc.", "client": "Acme Inc.", "release": "Release 2.3", "version": "2.3.0", "status": "in_signoff", "created_at": "2025-05-12T00:00:00Z", "target_date": "2025-05-30T00:00:00Z"},
                 "metrics": {"requirements": {"value": 86, "items": [{"value": 74, "tone": "success", "label": "agreed"}, {"value": 8, "tone": "warning", "label": "pending"}, {"value": 4, "tone": "neutral", "label": "out of scope"}]}, "verification": {"value": 82, "suffix": "%", "items": [{"value": 71, "tone": "success", "label": "passed"}, {"value": 11, "tone": "error", "label": "failed"}, {"value": 4, "tone": "progress", "label": "in progress"}]}, "coverage": {"value": 95, "suffix": "%", "items": [{"value": 6, "tone": "success", "label": "vs last release"}]}, "changes": {"value": 12, "items": [{"value": 8, "tone": "success", "label": "approved"}, {"value": 2, "tone": "warning", "label": "pending"}, {"value": 2, "tone": "error", "label": "rejected"}]}},
                 "requirements": rows[:5], "selected_requirement": _acme_detail(selected),
-                "activity": [{"avatar": "maria", "author": "Client reviewer", "text": "approved change CHG-021", "time": "2h ago"}, {"avatar": "system", "author": "System", "text": "verified 5 requirements", "time": "5h ago"}, {"avatar": "john", "author": "Reviewer", "text": "commented on REQ-041", "time": "1d ago"}],
+                "activity": [{"avatar": "reviewer", "author": "Client reviewer", "text": "approved change CHG-021", "time": "2h ago"}, {"avatar": "system", "author": "System", "text": "verified 5 requirements", "time": "5h ago"}, {"avatar": "owner", "author": "Delivery owner", "text": "commented on REQ-041", "time": "1d ago"}],
                 "verification_status": [{"name": "Passed", "value": 71, "tone": "success"}, {"name": "Failed", "value": 11, "tone": "error"}, {"name": "In progress", "value": 4, "tone": "progress"}, {"name": "Not started", "value": 4, "tone": "neutral"}],
                 "coverage_trend": [68, 70, 69, 71, 73, 72, 74, 77, 79, 82, 88, 95],
             }
