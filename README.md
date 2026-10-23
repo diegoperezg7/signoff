@@ -149,11 +149,11 @@ See [Contextual agents](docs/AI_AGENTS.md) and [AI architecture](docs/AI_ARCHITE
 
 ## Technical highlights
 
-- **Organization isolation.** Outside mock mode, the user and organization come from a verified Supabase access token (JWKS RS256, or HS256 with the project secret), and the membership table is authoritative for the role. Projects are listed and resolved through the caller's organization; agent runs, approvals and AI consents from another organization return 404, and the PostgreSQL repository filters every project query by `organization_id`.
+- **Organization isolation.** Outside mock mode, the user and organization come from a verified Supabase access token (JWKS RS256, or HS256 with the project secret), and the membership table is authoritative for the role. Every route under `/api/v1/projects/{project_id}` resolves the project through the caller's organization before the handler runs, so a project, agent run, approval or AI consent from another organization returns 404, and the PostgreSQL repository filters every project query by `organization_id`.
 - **HMAC-signed evidence links.** Evidence is stored with its SHA-256. Local links are signed with HMAC-SHA256 over `key:expiry`, last 15 minutes by default (24 hours at most), are compared in constant time and reject path traversal. In production the S3/R2 adapter issues presigned URLs instead.
 - **Data classification and AI consent.** Content is classified on five levels (`PUBLIC` to `RESTRICTED`). An AI call is allowed only for an allowlisted provider, below the configured ceiling for external processing, and with explicit consent for confidential content, recorded per document and model route. Secrets and personal data are redacted before model calls by default. Mock mode never sends content off the machine.
 - **Draft-first AI.** Every model output is stored as a proposal with provider, model, prompt version, tokens, latency and estimated cost, and changes nothing until a person approves it.
-- **Tests.** 46 API tests (`make test`) cover the verification engine, readiness scoring, the agent runtime and policy, redaction, consent, retention, signed links and the review flow. CI also builds the Next.js app.
+- **Tests.** 47 API tests (`make test`) cover the verification engine, readiness scoring, the agent runtime and policy, redaction, consent, retention, signed links and the review flow. CI also builds the Next.js app.
 
 ## Architecture
 
@@ -220,7 +220,7 @@ Signoff is a proof of concept.
 - **Mock mode is the default.** The catalog lives in memory, the model is a deterministic local provider and authentication returns a fixed demo owner. No external keys are needed.
 - **Verification is simulated.** Browser runs return scripted steps and evidence; the file inspector and human evidence are real. The QA explorer makes real HTTP requests, only to allowed local hosts.
 - **The worker is a stub.** The Dramatiq actors in `apps/worker` record job state transitions but do not run browsers or models yet.
-- **Production adapters exist but are not the demo path:** PostgreSQL repository and migrations, Supabase token validation, S3/R2 storage, hosted model adapters and email delivery. Some delivery endpoints (verification runs, evidence, file inspection) still resolve projects against the demo organization rather than the caller's.
+- **Production adapters exist but are not the demo path:** PostgreSQL repository and migrations, Supabase token validation, S3/R2 storage, hosted model adapters and email delivery. A few legacy routes addressed by resource id instead of project (`PATCH /api/v1/requirements/{id}`, `PATCH /api/v1/changes/{id}`, `POST /api/v1/scope/import`) act on the demo project and are not organization-scoped yet.
 
 ## Quickstart
 

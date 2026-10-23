@@ -9,6 +9,7 @@
 - Compacted the workspace header on phones and showed the full wordmark in the mobile sidebar and review portal.
 - Styled the landing theme toggle and fixed the dark mode proof cards and secondary button.
 - Summarized agent tool outputs in the agent panel instead of showing raw JSON.
+- Scoped every `/api/v1/projects/{project_id}` route to the caller's organization, including verification runs, evidence, file inspection and acceptance.
 - Replaced the screenshots with a light-theme walkthrough and an animated tour, and documented the agents, request path, evidence links and verification flow with diagrams.
 
 ## 0.3.0 — 2026-08-19 — Contextual agents and privacy controls
