@@ -726,7 +726,7 @@ select:focus-visible {
 
 @media (max-width: 640px) {
   .reference-dashboard .reference-agent-dock {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .reference-dashboard .reference-agent-trigger {
@@ -1026,7 +1026,7 @@ select:focus-visible {
 
   .reference-dashboard .reference-context-strip {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     min-height: 0;
     padding-top: 14px;
@@ -1047,7 +1047,7 @@ select:focus-visible {
   }
 
   .reference-dashboard .reference-context-action {
-    grid-column: 1 / -1;
+    grid-column: auto;
     justify-content: center;
     margin-left: 0;
   }
@@ -1067,6 +1067,30 @@ select:focus-visible {
 
   .reference-dashboard .reference-global-surface {
     padding: 26px 20px 38px;
+  }
+}
+
+@media (max-width: 760px) {
+  .reference-dashboard .reference-sidebar {
+    padding: 10px 12px;
+  }
+
+  .reference-dashboard .reference-brand {
+    height: 42px;
+    padding: 0 2px;
+  }
+
+  .reference-dashboard .brand-lockup-frame-compact {
+    width: 132px;
+    height: 34px;
+  }
+
+  .reference-dashboard .reference-nav-group + .reference-nav-group {
+    margin-top: 0;
+  }
+
+  .reference-dashboard .reference-nav-item {
+    min-height: 34px;
   }
 }
 

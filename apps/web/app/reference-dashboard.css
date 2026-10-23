@@ -2092,7 +2092,7 @@
     width: 46px;
     height: 46px;
   }
-  .brand-lockup-frame-compact > .brand-lockup-compact {
+  .reference-sidebar .brand-lockup-frame-compact > .brand-lockup-compact {
     object-fit: contain;
     object-position: center;
     content: url('/brand/signoff-mark-transparent.png');
@@ -2195,8 +2195,10 @@
     width: 154px;
     height: 38px;
   }
-  .brand-lockup-frame-compact > .brand-lockup-compact {
+  .reference-sidebar .brand-lockup-frame-compact > .brand-lockup-compact {
     object-fit: contain;
+    object-position: left center;
+    content: normal;
   }
   .reference-nav {
     display: flex;
