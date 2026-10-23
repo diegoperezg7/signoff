@@ -1497,6 +1497,12 @@
   grid-column: 1 / -1;
   min-width: 0;
 }
+@media (min-width: 901px) {
+  .reference-workspace:has(> .reference-drawer) > .reference-tab-view {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
 .reference-tab-view-heading {
   display: flex;
   align-items: center;
@@ -1864,10 +1870,19 @@
   font-size: 11px;
 }
 .reference-project-card .reference-secondary-button,
-.reference-template-card .reference-secondary-button {
+.reference-template-card .reference-secondary-button,
+.reference-baseline-import .reference-secondary-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  width: auto;
+  padding: 0 14px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.reference-project-card .reference-secondary-button,
+.reference-template-card .reference-secondary-button {
+  align-self: flex-start;
   margin-top: auto;
 }
 .reference-global-list {
