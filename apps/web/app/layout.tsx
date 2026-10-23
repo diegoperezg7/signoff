@@ -1,5 +1,5 @@
 import "./globals.css";
-import "./rentia-skin.css";
+import "./signoff-skin.css";
 import "./product-ui.css";
 import "./chart-fixes.css";
 import "./review-fixes.css";
