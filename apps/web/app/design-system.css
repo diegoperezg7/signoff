@@ -1,6 +1,6 @@
 /* Signoff product layer: shared visual language for workspace surfaces. */
 :root {
-  --signoff-font-display: var(--font-geist, Geist), system-ui, sans-serif;
+  --signoff-font-display: var(--font-inter, Inter), system-ui, sans-serif;
   --signoff-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --signoff-radius-sm: 7px;
   --signoff-radius-md: 10px;
@@ -11,8 +11,8 @@
   --signoff-space-4: 16px;
   --signoff-space-5: 20px;
   --signoff-space-6: 24px;
-  --signoff-shadow-soft: 0 12px 30px rgba(3, 8, 20, 0.12);
-  --signoff-shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.16);
+  --signoff-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.12);
+  --signoff-shadow-focus: 0 0 0 3px color-mix(in srgb, var(--reference-primary) 16%, transparent);
 }
 
 html,
@@ -107,7 +107,7 @@ select:focus-visible {
 }
 
 .reference-dashboard .reference-nav-item.is-active svg {
-  color: #8c86ff;
+  color: var(--reference-accent-ink);
 }
 
 .reference-dashboard .reference-topbar {
@@ -174,7 +174,6 @@ select:focus-visible {
 
 .reference-dashboard .reference-release-header p {
   margin-top: 11px;
-  font-variant-numeric: tabular-nums;
 }
 
 .reference-dashboard .reference-status-select,
@@ -188,7 +187,7 @@ select:focus-visible {
 }
 
 .reference-dashboard .reference-primary-button {
-  box-shadow: 0 8px 22px rgba(91, 84, 246, 0.24);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--reference-primary) 24%, transparent);
 }
 
 .reference-dashboard .reference-tabs {
@@ -281,7 +280,7 @@ select:focus-visible {
   border: 1px solid color-mix(in srgb, var(--reference-primary) 34%, var(--reference-border) 66%);
   border-radius: var(--signoff-radius-sm);
   background: color-mix(in srgb, var(--reference-primary-soft) 68%, transparent);
-  color: #a8a3ff;
+  color: var(--reference-accent-ink);
   font-size: 11px;
   font-weight: 580;
   white-space: nowrap;
@@ -309,7 +308,7 @@ select:focus-visible {
   border: 1px solid color-mix(in srgb, var(--reference-primary) 42%, var(--reference-border) 58%);
   border-radius: var(--signoff-radius-sm);
   background: color-mix(in srgb, var(--reference-primary-soft) 72%, transparent);
-  color: #b4b0ff;
+  color: var(--reference-accent-ink);
   font-size: 11px;
   font-weight: 600;
 }
@@ -439,28 +438,30 @@ select:focus-visible {
 
 .reference-dashboard .reference-agent-icon {
   display: grid;
-  overflow: hidden;
-  position: relative;
+  flex: none;
   width: 36px;
   height: 36px;
   place-items: center;
-  border-radius: var(--signoff-radius-sm);
-  background: transparent;
-  color: #aaa6ff;
+  border: 1px solid var(--reference-border);
+  border-radius: var(--signoff-radius-md);
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
 .reference-dashboard .reference-agent-avatar {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 220ms ease, filter 220ms ease;
+  flex: none;
 }
 
-.reference-dashboard .reference-agent-option:hover .reference-agent-avatar,
-.reference-dashboard .reference-agent-option.is-selected .reference-agent-avatar {
-  transform: translateY(-2px) scale(1.04);
-  filter: drop-shadow(0 5px 8px color-mix(in srgb, var(--reference-primary) 28%, transparent));
+.reference-dashboard .reference-agent-option:hover .reference-agent-icon {
+  border-color: var(--reference-border-strong);
+}
+
+.reference-dashboard .reference-agent-option.is-selected .reference-agent-icon {
+  border-color: var(--reference-lime);
+  background: var(--reference-lime);
+  color: #000000;
 }
 
 .reference-dashboard .reference-agent-loading,
@@ -475,10 +476,6 @@ select:focus-visible {
   color: var(--reference-muted);
   font-size: 10px;
 }
-
-.reference-dashboard .agent-amber { background: transparent; color: var(--reference-warning); }
-.reference-dashboard .agent-blue { background: transparent; color: var(--reference-progress); }
-.reference-dashboard .agent-violet { background: transparent; color: #b49aff; }
 
 .reference-dashboard .reference-agent-question {
   display: grid;
@@ -535,7 +532,7 @@ select:focus-visible {
   border: 1px solid var(--reference-primary);
   border-radius: var(--signoff-radius-sm);
   background: var(--reference-primary);
-  color: #fff;
+  color: var(--reference-on-primary);
   font-size: 11px;
   font-weight: 600;
 }
@@ -567,7 +564,7 @@ select:focus-visible {
 
 .reference-dashboard .reference-agent-run:hover,
 .reference-dashboard .reference-agent-approve:hover {
-  background: #726bff;
+  background: var(--reference-accent-ink);
 }
 
 .reference-dashboard .reference-agent-run:disabled,
@@ -612,27 +609,18 @@ select:focus-visible {
 
 .reference-dashboard .reference-agent-result-avatar {
   display: grid;
-  overflow: hidden;
   width: 24px;
   height: 24px;
   margin-right: 2px;
   place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--reference-muted);
-}
-
-.reference-dashboard .reference-agent-result-avatar img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  border-radius: 7px;
+  background: var(--reference-lime);
+  color: #000000;
 }
 
 .reference-dashboard .reference-agent-result-avatar .reference-agent-avatar {
-  width: 100%;
-  height: 100%;
+  width: 14px;
+  height: 14px;
 }
 .reference-dashboard .reference-agent-meta {
   color: var(--reference-muted);
@@ -702,7 +690,7 @@ select:focus-visible {
 }
 .reference-dashboard .reference-agent-history-row {
   align-items: center;
-  border-bottom: 1px solid rgba(148, 163, 184, .12);
+  border-bottom: 1px solid rgba(128, 128, 128, .12);
   display: flex;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 10px;
@@ -782,7 +770,7 @@ select:focus-visible {
 }
 
 .reference-dashboard .reference-metric-card:nth-child(1)::before {
-  background: #7c83ff;
+  background: var(--reference-accent-ink);
 }
 
 .reference-dashboard .reference-metric-card:nth-child(2)::before {
@@ -913,11 +901,11 @@ select:focus-visible {
 }
 
 .reference-dashboard.reference-light {
-  --signoff-shadow-soft: 0 10px 24px rgba(31, 48, 83, 0.08);
+  --signoff-shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
 .reference-dashboard.reference-light .reference-sidebar {
-  background: linear-gradient(180deg, #ffffff, #f8faff);
+  background: linear-gradient(180deg, #ffffff, var(--reference-surface-2));
 }
 
 .reference-dashboard.reference-light .reference-topbar {
@@ -925,13 +913,13 @@ select:focus-visible {
 }
 
 .reference-dashboard.reference-light .reference-status-select {
-  border-color: #d7d4ff;
-  background: #eeecff;
-  color: #3730a3;
+  border-color: var(--reference-primary-soft);
+  background: var(--reference-primary-soft);
+  color: var(--reference-primary);
 }
 
 .reference-dashboard.reference-light .reference-status-select .status-dot {
-  background: #16a34a;
+  background: var(--reference-success);
 }
 
 .reference-dashboard.reference-light .reference-metric-card,
@@ -941,22 +929,22 @@ select:focus-visible {
 }
 
 .reference-dashboard.reference-light .reference-metric-icon {
-  background: #f1f2ff;
-  border-color: #dfe3f4;
+  background: var(--reference-primary-soft);
+  border-color: var(--reference-primary-soft);
 }
 
 .reference-dashboard.reference-light .reference-requirement-row.is-selected {
-  background: #f0f2ff;
-  border-color: #cbd4f7;
+  background: var(--reference-primary-soft);
+  border-color: var(--reference-border);
 }
 
 .reference-dashboard.reference-light .reference-search:focus-within {
-  border-color: #aeb9ef;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  border-color: var(--reference-accent-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--reference-primary) 12%, transparent);
 }
 
 .reference-dashboard.reference-light .reference-primary-button {
-  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.18);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--reference-primary) 18%, transparent);
 }
 
 @media (max-width: 1080px) {
@@ -1101,3 +1089,1130 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Redesign 2026-11: black base, phosphor lime accent, Inter.          */
+/* Brand, layout rhythm, KPI cards and table density for the dashboard. */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --brand-tile: #0a0a0a;
+  --brand-shard: #d9ff3f;
+  --signoff-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root[data-theme="dark"] {
+  --brand-tile: #d9ff3f;
+  --brand-shard: #000000;
+}
+
+.brand-lockup-frame,
+.reference-dashboard .brand-lockup-frame-compact,
+.review-brand .brand-lockup-frame-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  height: auto;
+}
+
+.brand-mark-svg {
+  display: block;
+  flex: none;
+}
+
+.brand-wordmark {
+  color: var(--reference-text, currentColor);
+  font-family: var(--signoff-font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.brand-lockup-frame:not(.brand-lockup-frame-compact) .brand-wordmark {
+  font-size: 22px;
+}
+
+/* Shell */
+.reference-dashboard {
+  letter-spacing: -0.011em;
+}
+
+.reference-dashboard .reference-sidebar {
+  padding: 18px 12px 12px;
+  background: var(--reference-sidebar);
+}
+
+.reference-dashboard .reference-brand {
+  height: auto;
+  padding: 6px 10px 28px;
+}
+
+.reference-dashboard .reference-nav-label {
+  padding: 0 10px 8px;
+  color: var(--reference-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.reference-dashboard .reference-nav-group + .reference-nav-group {
+  margin-top: 22px;
+}
+
+.reference-dashboard .reference-nav-item {
+  position: relative;
+  min-height: 34px;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--reference-muted);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.reference-dashboard .reference-nav-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--reference-subtle);
+}
+
+.reference-dashboard .reference-nav-item:hover {
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+}
+
+.reference-dashboard .reference-nav-item.is-active {
+  background: var(--reference-primary-soft);
+  color: var(--reference-text);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.reference-dashboard .reference-nav-item.is-active svg {
+  color: var(--reference-text);
+}
+
+.reference-dashboard.reference-light .reference-nav-item.is-active {
+  background: var(--reference-primary);
+  color: var(--reference-on-primary);
+}
+
+.reference-dashboard.reference-light .reference-nav-item.is-active svg {
+  color: var(--reference-lime);
+}
+
+/* Header */
+.reference-dashboard .reference-release-header {
+  padding: 32px 34px 18px;
+}
+
+.reference-dashboard .reference-title-row h1 {
+  font-size: clamp(26px, 2.2vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.reference-dashboard .reference-release-header p {
+  margin-top: 8px;
+  color: var(--reference-muted);
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.reference-dashboard .reference-primary-button,
+.reference-dashboard.reference-light .reference-primary-button {
+  border-color: var(--reference-primary);
+  background: var(--reference-primary);
+  color: var(--reference-on-primary);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-primary-button:hover {
+  opacity: 0.88;
+}
+
+.reference-dashboard .reference-context-action {
+  border-color: var(--reference-border-strong);
+  background: var(--reference-surface);
+  color: var(--reference-text);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.reference-dashboard .reference-context-action:hover {
+  border-color: var(--reference-text);
+  background: var(--reference-surface);
+  transform: none;
+}
+
+.reference-dashboard .reference-context-strip {
+  background: var(--reference-bg);
+}
+
+.reference-dashboard .reference-tabs {
+  gap: 28px;
+}
+
+.reference-dashboard .reference-tabs button {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Workspace grid: give the table room next to the drawer */
+.reference-dashboard .reference-workspace {
+  gap: 16px;
+  padding: 20px 24px 40px 34px;
+}
+
+.reference-dashboard .reference-metrics {
+  gap: 12px;
+}
+
+.reference-dashboard .reference-main-column {
+  gap: 16px;
+}
+
+
+/* KPI cards: no coloured top bars, quieter icons, one strong number */
+.reference-dashboard .reference-metric-card {
+  height: auto;
+  min-height: 168px;
+  padding: 18px 18px 16px;
+  border-radius: var(--signoff-radius-lg);
+  box-shadow: none;
+}
+
+.reference-dashboard .reference-metric-card::before {
+  display: none;
+}
+
+.reference-dashboard .reference-metric-card.is-interactive:hover {
+  border-color: var(--reference-border-strong);
+}
+
+.reference-dashboard .reference-metric-top {
+  color: var(--reference-muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.reference-dashboard .reference-metric-icon,
+.reference-dashboard.reference-light .reference-metric-icon {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--reference-surface-2);
+  color: var(--reference-muted);
+  box-shadow: none;
+}
+
+.reference-dashboard .reference-metric-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.reference-dashboard .reference-metric-value {
+  margin-top: 14px;
+  font-size: 34px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.reference-dashboard .reference-metric-items {
+  gap: 5px;
+  margin-top: 14px;
+  color: var(--reference-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.reference-dashboard .reference-metric-items b {
+  min-width: 18px;
+  color: var(--reference-text);
+  font-weight: 600;
+}
+
+.reference-dashboard .status-dot {
+  width: 7px;
+  height: 7px;
+}
+
+/* Cards and table */
+.reference-dashboard .reference-card,
+.reference-dashboard .reference-drawer {
+  border-radius: var(--signoff-radius-lg);
+  box-shadow: none;
+}
+
+.reference-dashboard.reference-light .reference-metric-card,
+.reference-dashboard.reference-light .reference-card,
+.reference-dashboard.reference-light .reference-drawer {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.reference-dashboard .reference-card-heading h2 {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.reference-dashboard .reference-table-header,
+.reference-dashboard .reference-requirement-row {
+  column-gap: 10px;
+}
+
+.reference-dashboard .reference-table-header {
+  color: var(--reference-subtle);
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.reference-dashboard .reference-requirement-row {
+  font-size: 13px;
+}
+
+.reference-dashboard .reference-req-id {
+  color: var(--reference-muted);
+  font-family: var(--signoff-font-display);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.reference-dashboard .reference-req-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 550;
+}
+
+.reference-dashboard .reference-requirement-row:hover,
+.reference-dashboard.reference-light .reference-requirement-row:hover {
+  background: var(--reference-surface-2);
+}
+
+.reference-dashboard .reference-requirement-row.is-selected,
+.reference-dashboard.reference-light .reference-requirement-row.is-selected {
+  border-color: transparent;
+  background: var(--reference-primary-soft);
+  box-shadow: inset 3px 0 0 var(--reference-lime);
+}
+
+.reference-dashboard .reference-pill,
+.reference-dashboard.reference-light .reference-pill.pill-agreed,
+.reference-dashboard.reference-light .reference-pill.pill-pending {
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-progress {
+  height: 4px;
+}
+
+/* Agents */
+.reference-dashboard .reference-agent-trigger {
+  border-color: var(--reference-border-strong);
+  background: var(--reference-surface);
+  color: var(--reference-text);
+}
+
+.reference-dashboard .reference-drawer-cta {
+  border-color: var(--reference-primary);
+  color: var(--reference-on-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.reference-dashboard .reference-drawer-cta:hover {
+  background: var(--reference-primary);
+  opacity: 0.88;
+}
+
+/* Legacy variables used by the client review portal */
+:root {
+  --bg: var(--reference-bg);
+  --surface: var(--reference-surface);
+  --raised: var(--reference-surface-2);
+  --line: var(--reference-border);
+  --text: var(--reference-text);
+  --muted: var(--reference-muted);
+  --blue: var(--reference-primary);
+  --green: var(--reference-success);
+  --orange: var(--reference-warning);
+  --red: var(--reference-error);
+}
+
+body {
+  background: var(--reference-bg);
+  color: var(--reference-text);
+}
+
+.review-page .button {
+  border-color: var(--reference-border-strong);
+  background: var(--reference-surface);
+  color: var(--reference-text);
+  box-shadow: none;
+}
+
+.review-page .button.primary {
+  border-color: var(--reference-primary);
+  background: var(--reference-primary);
+  color: var(--reference-on-primary);
+}
+
+.review-page .button.primary:hover {
+  background: var(--reference-primary);
+  opacity: 0.88;
+}
+
+.reference-dashboard.reference-light .reference-sidebar {
+  background: var(--reference-sidebar);
+}
+
+.landing.review-page {
+  background: var(--reference-bg);
+  color: var(--reference-text);
+}
+
+@media (max-width: 1080px) and (min-width: 761px) {
+  .reference-dashboard .reference-sidebar .brand-wordmark {
+    display: none;
+  }
+}
+
+/* Wide layout only: below 1241px the original collapse rules take over. */
+@media (min-width: 1241px) {
+  .reference-dashboard {
+    grid-template-columns: 224px minmax(0, 1fr);
+  }
+
+  .reference-dashboard .reference-sidebar {
+    min-width: 224px;
+  }
+
+  .reference-dashboard .reference-workspace {
+    grid-template-columns: minmax(0, 1fr) 344px;
+  }
+
+  .reference-dashboard .reference-requirements-row {
+    grid-template-columns: minmax(0, 1fr) 176px;
+  }
+
+  .reference-dashboard .reference-table-header,
+  .reference-dashboard .reference-requirement-row {
+    grid-template-columns: 64px minmax(0, 1fr) 82px 104px 84px 14px;
+  }
+}
+
+.reference-dashboard .reference-avatar {
+  border-color: var(--reference-border-strong);
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+}
+
+/* ------------------------------------------------------------------ */
+/* Live data layer (2026-11): tables over the full requirement list,  */
+/* charts, agent timeline and proposal review. Tokens only.           */
+/* ------------------------------------------------------------------ */
+
+/* Tones */
+.reference-dashboard .reference-pill.pill-tone-success { border-color: transparent; background: var(--reference-success-soft); color: var(--reference-success); }
+.reference-dashboard .reference-pill.pill-tone-warning { border-color: transparent; background: var(--reference-warning-soft); color: var(--reference-warning); }
+.reference-dashboard .reference-pill.pill-tone-error { border-color: transparent; background: var(--reference-error-soft); color: var(--reference-error); }
+.reference-dashboard .reference-pill.pill-tone-progress { border-color: transparent; background: color-mix(in srgb, var(--reference-progress) 13%, transparent); color: var(--reference-progress); }
+.reference-dashboard .reference-pill.pill-tone-neutral { border-color: transparent; background: var(--reference-surface-2); color: var(--reference-muted); }
+.reference-dashboard .reference-pill { gap: 5px; font-weight: 600; }
+
+.signoff-ink-error { color: var(--reference-error); }
+.signoff-ink-warning { color: var(--reference-warning); }
+.signoff-ink-progress { color: var(--reference-progress); }
+
+.reference-dashboard .context-indicator-success { color: var(--reference-success); background: var(--reference-success); }
+.reference-dashboard .context-indicator-progress { color: var(--reference-progress); background: var(--reference-progress); }
+.reference-dashboard .context-indicator-neutral { color: var(--reference-neutral); background: var(--reference-neutral); }
+
+.reference-dashboard .avatar-member { background: var(--reference-surface-2); color: var(--reference-text); }
+.reference-dashboard .avatar-agent { background: var(--reference-primary-soft); color: var(--reference-accent-ink); }
+.reference-dashboard .avatar-client { background: color-mix(in srgb, var(--reference-progress) 16%, transparent); color: var(--reference-progress); }
+.reference-dashboard .reference-avatar.avatar-sm { width: 20px; height: 20px; min-width: 20px; font-size: 8px; }
+
+.signoff-empty-text {
+  margin: 8px 0;
+  color: var(--reference-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reference-dashboard .signoff-link-button,
+.reference-dashboard .signoff-text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--reference-muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.reference-dashboard .signoff-link-button:hover:not(:disabled),
+.reference-dashboard .signoff-text-button:hover:not(:disabled) {
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+}
+.reference-dashboard .signoff-link-button:disabled,
+.reference-dashboard .signoff-text-button:disabled { opacity: 0.55; cursor: default; }
+
+.reference-dashboard .signoff-icon-button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--reference-border);
+  border-radius: 7px;
+  background: var(--reference-surface-2);
+  color: var(--reference-muted);
+}
+.reference-dashboard .signoff-icon-button:hover { border-color: var(--reference-border-strong); color: var(--reference-text); }
+
+.reference-dashboard .signoff-count-badge {
+  display: inline-grid;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--reference-primary);
+  color: var(--reference-on-primary);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Search */
+.reference-dashboard .signoff-search-wrap { position: relative; }
+.reference-dashboard .signoff-search-results {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(420px, 80vw);
+  padding: 6px;
+  border: 1px solid var(--reference-border-strong);
+  border-radius: var(--signoff-radius-md);
+  background: var(--reference-surface);
+  box-shadow: var(--signoff-shadow-soft);
+}
+.reference-dashboard .signoff-search-results button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+}
+.reference-dashboard .signoff-search-results button span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reference-dashboard .signoff-search-results button small { color: var(--reference-muted); font-size: 11px; }
+.reference-dashboard .signoff-search-results button:hover,
+.reference-dashboard .signoff-search-results button[aria-selected="true"] { background: var(--reference-surface-2); }
+
+/* Notifications */
+.reference-dashboard .reference-notification-panel { max-height: min(520px, calc(100vh - 100px)); overflow: auto; }
+.reference-dashboard .reference-notification-panel > button.is-unread strong::before {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--reference-error);
+  content: "";
+}
+.reference-dashboard .reference-notification-panel > button.is-read { opacity: 0.72; }
+.reference-dashboard .reference-notification-panel > div button:disabled { opacity: 0.5; cursor: default; }
+
+/* KPI: stacked bar, highlight on change */
+.reference-dashboard .signoff-stack { margin-top: 12px; }
+.reference-dashboard .signoff-stack-bar {
+  display: flex;
+  height: 6px;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--reference-surface-2);
+  transform-origin: left center;
+}
+.reference-dashboard .signoff-stack-bar span { min-width: 3px; height: 100%; }
+.reference-dashboard .signoff-stack .reference-metric-items { margin-top: 10px; }
+.reference-dashboard .reference-metric-card.is-changed { border-color: var(--reference-primary); }
+
+/* Generic meter (row coverage, readiness) */
+.reference-dashboard .signoff-meter {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 36px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--reference-border);
+}
+.reference-dashboard .signoff-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--reference-primary);
+  transform-origin: left center;
+}
+.reference-dashboard .signoff-readiness-meter { display: grid; gap: 6px; margin: 12px 0 4px; color: var(--reference-muted); font-size: 12px; }
+.reference-dashboard .signoff-readiness-meter b { color: var(--reference-text); font-variant-numeric: tabular-nums; }
+
+/* Chart cards */
+.reference-dashboard .signoff-chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 13px;
+}
+.reference-dashboard .signoff-chart-card { padding: 17px 18px; }
+.reference-dashboard .signoff-card-hint { margin: -6px 0 6px; color: var(--reference-muted); font-size: 11px; }
+.reference-dashboard .signoff-trend { display: grid; gap: 4px; }
+.reference-dashboard .signoff-trend-summary { display: flex; align-items: baseline; gap: 10px; }
+.reference-dashboard .signoff-trend-summary strong { font-size: 24px; font-weight: 650; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-trend-summary span { color: var(--reference-muted); font-size: 12px; font-weight: 550; }
+.reference-dashboard .signoff-trend-summary span.is-up { color: var(--reference-success); }
+.reference-dashboard .signoff-trend-summary span.is-down { color: var(--reference-error); }
+.reference-dashboard .signoff-trend-frame { width: 100%; height: 190px; }
+.reference-dashboard .signoff-trend-label { paint-order: stroke; stroke: var(--reference-surface); stroke-width: 3px; }
+.signoff-chart-tooltip {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--reference-border-strong);
+  border-radius: 8px;
+  background: var(--reference-surface);
+  color: var(--reference-text);
+  box-shadow: var(--signoff-shadow-soft);
+  font-size: 11px;
+}
+.signoff-chart-tooltip span,
+.signoff-chart-tooltip small { color: var(--reference-muted); }
+.signoff-chart-tooltip strong { font-size: 15px; font-variant-numeric: tabular-nums; }
+
+.reference-dashboard .signoff-hbars { display: grid; gap: 12px; margin-top: 8px; }
+.reference-dashboard .signoff-hbar {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.reference-dashboard .signoff-hbar-label { color: var(--reference-muted); }
+.reference-dashboard .signoff-hbar-track { height: 10px; overflow: hidden; border-radius: 4px; background: var(--reference-surface-2); }
+.reference-dashboard .signoff-hbar-fill { display: block; height: 100%; border-radius: 4px; transform-origin: left center; }
+.reference-dashboard .signoff-hbar-value { display: flex; justify-content: flex-end; gap: 6px; font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-hbar-value small { min-width: 30px; color: var(--reference-muted); text-align: right; }
+
+/* Full requirement lists */
+.reference-dashboard .signoff-list-card { display: grid; align-content: start; gap: 12px; padding: 17px; }
+.reference-dashboard .signoff-list-card > p { margin: 0; color: var(--reference-muted); font-size: 12px; }
+.reference-dashboard .signoff-list-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.reference-dashboard .signoff-list-count { margin-left: auto; color: var(--reference-subtle); font-size: 11px; font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-filter-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  min-width: 220px;
+  padding: 0 10px;
+  border: 1px solid var(--reference-border);
+  border-radius: 8px;
+  background: var(--reference-surface);
+  color: var(--reference-muted);
+}
+.reference-dashboard .signoff-filter-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--reference-text); font-size: 12px; }
+.reference-dashboard .signoff-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.reference-dashboard .signoff-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--reference-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--reference-muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.reference-dashboard .signoff-chips button b { color: var(--reference-text); font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-chips button.is-active { border-color: var(--reference-primary); background: var(--reference-primary-soft); color: var(--reference-text); }
+
+.reference-dashboard .signoff-table { min-width: 0; }
+.reference-dashboard .signoff-table-row {
+  display: grid;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  border: 0;
+  border-top: 1px solid var(--reference-border);
+  background: transparent;
+  color: var(--reference-text);
+  text-align: left;
+  font-size: 12px;
+}
+.reference-dashboard .signoff-table.is-requirements .signoff-table-row { grid-template-columns: 70px minmax(0, 1fr) 70px 64px 110px; }
+.reference-dashboard .signoff-table.is-verification .signoff-table-row { grid-template-columns: 70px minmax(0, 1fr) 110px 120px 64px; }
+.reference-dashboard .signoff-table.is-signoff .signoff-table-row { grid-template-columns: 70px minmax(0, 1fr) 104px 128px 76px; }
+.reference-dashboard .signoff-table-head {
+  min-height: 32px;
+  border-top: 0;
+  color: var(--reference-subtle);
+  font-size: 11px;
+  font-weight: 600;
+}
+.reference-dashboard .signoff-table-body { max-height: 560px; overflow-y: auto; }
+.reference-dashboard button.signoff-table-row:hover { background: var(--reference-surface-2); }
+.reference-dashboard .signoff-table-row.is-selected { background: var(--reference-primary-soft); box-shadow: inset 2px 0 0 var(--reference-primary); }
+.reference-dashboard .signoff-cell-title { display: grid; min-width: 0; gap: 2px; }
+.reference-dashboard .signoff-cell-title strong { overflow: hidden; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.reference-dashboard .signoff-cell-title small { overflow: hidden; color: var(--reference-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.reference-dashboard .signoff-num { font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-priority { color: var(--reference-muted); font-size: 11px; }
+.reference-dashboard .signoff-priority.is-high { color: var(--reference-text); font-weight: 600; }
+
+/* Changes */
+.reference-dashboard .signoff-change-list,
+.reference-dashboard .signoff-evidence-list { display: grid; max-height: 620px; overflow-y: auto; }
+.reference-dashboard .signoff-change {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 14px 4px;
+  border-top: 1px solid var(--reference-border);
+}
+.reference-dashboard .signoff-change-main { display: grid; gap: 8px; min-width: 0; }
+.reference-dashboard .signoff-change-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.reference-dashboard .signoff-meta-line { color: var(--reference-subtle); font-size: 11px; }
+.reference-dashboard .signoff-change-actions { align-self: start; gap: 6px; }
+.reference-dashboard .signoff-change-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--reference-border);
+  border-radius: 7px;
+  background: var(--reference-surface-2);
+  font-size: 12px;
+  font-weight: 550;
+}
+.reference-dashboard .signoff-change-actions .signoff-approve { border-color: var(--reference-primary); background: var(--reference-primary); color: var(--reference-on-primary); }
+.reference-dashboard .signoff-change-actions .signoff-reject:hover:not(:disabled) { border-color: var(--reference-error); color: var(--reference-error); }
+
+.reference-dashboard .signoff-defs {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+.reference-dashboard .signoff-defs dt { color: var(--reference-muted); }
+.reference-dashboard .signoff-defs dd { margin: 0; color: var(--reference-text); }
+
+/* Evidence */
+.reference-dashboard .signoff-evidence-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto 28px;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 4px;
+  border-top: 1px solid var(--reference-border);
+  font-size: 12px;
+}
+.reference-dashboard .signoff-req-link { border: 0; background: transparent; text-align: left; text-decoration: underline; text-decoration-color: var(--reference-border-strong); text-underline-offset: 3px; }
+.reference-dashboard code { font-family: var(--signoff-font-mono); font-size: 10px; }
+.reference-dashboard .signoff-upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed var(--reference-border-strong);
+  border-radius: var(--signoff-radius-md);
+}
+.reference-dashboard .signoff-upload.is-compact { margin-top: 12px; }
+.reference-dashboard .signoff-upload .reference-file-picker { min-height: 32px; }
+.reference-dashboard .signoff-field { display: grid; gap: 4px; color: var(--reference-muted); font-size: 11px; }
+.reference-dashboard .signoff-field-grow { flex: 1 1 160px; }
+.reference-dashboard .signoff-field input,
+.reference-dashboard .signoff-field select {
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--reference-border);
+  border-radius: 7px;
+  background: var(--reference-surface);
+  color: var(--reference-text);
+  font-size: 12px;
+}
+.reference-dashboard .signoff-upload .reference-inspection-result { flex-basis: 100%; }
+.reference-dashboard .signoff-inspection > span { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.reference-dashboard .signoff-inspection small { color: var(--reference-muted); }
+.reference-dashboard .signoff-inspection.is-warning { color: var(--reference-warning); }
+.reference-dashboard .signoff-evidence-item { grid-template-columns: 14px minmax(0, 1fr) auto 24px !important; }
+.reference-dashboard .signoff-evidence-item > span:nth-child(2) { display: grid; gap: 2px; min-width: 0; }
+.reference-dashboard .signoff-evidence-item b { overflow: hidden; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.reference-dashboard .signoff-evidence-item small { color: var(--reference-muted); font-size: 10px; }
+.reference-dashboard .signoff-evidence-item button { display: grid; place-items: center; border: 0; background: transparent; color: var(--reference-muted); }
+
+/* Side summary */
+.reference-dashboard .reference-tab-side { display: grid; align-content: start; gap: 8px; }
+.reference-dashboard .signoff-readiness { margin-top: 6px; }
+.reference-dashboard .signoff-check { display: flex; align-items: flex-start; gap: 6px; }
+.reference-dashboard .signoff-check span { display: grid; gap: 1px; }
+.reference-dashboard .signoff-check b { color: var(--reference-text); font-weight: 600; }
+.reference-dashboard .signoff-check.is-blocked svg { color: var(--reference-error); }
+.reference-dashboard .signoff-check.is-attention svg { color: var(--reference-warning); }
+.reference-dashboard .signoff-check.is-ready svg { color: var(--reference-success); }
+
+/* Drawer */
+.reference-dashboard .reference-drawer-loading { display: grid; min-height: 160px; place-items: center; color: var(--reference-muted); font-size: 12px; }
+.reference-dashboard .signoff-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.reference-dashboard .signoff-section-heading h3 { margin: 0; }
+.reference-dashboard .signoff-source-tag {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--reference-primary-soft);
+  color: var(--reference-accent-ink);
+  font-size: 10px;
+  font-weight: 600;
+}
+.reference-dashboard .signoff-plan-block { margin-top: 18px; }
+.reference-dashboard .signoff-plan { display: grid; gap: 6px; margin: 8px 0 0; padding-left: 18px; color: var(--reference-text); font-size: 12px; line-height: 1.45; }
+.reference-dashboard .signoff-running-note { display: flex; align-items: center; gap: 7px; color: var(--reference-progress); font-size: 12px; }
+.reference-dashboard .signoff-run-history { display: grid; gap: 6px; margin-top: 12px; }
+.reference-dashboard .signoff-run-history > div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; font-size: 11px; }
+.reference-dashboard .signoff-run-history small,
+.reference-dashboard .signoff-run-history time { color: var(--reference-muted); font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-comment { display: grid; gap: 6px; }
+.reference-dashboard .signoff-comment p { margin: 0; line-height: 1.45; }
+.reference-dashboard .signoff-comment-head { display: flex; align-items: center; gap: 7px; }
+.reference-dashboard .signoff-comment-head time { margin-left: auto; color: var(--reference-subtle); font-size: 10px; }
+.reference-dashboard .signoff-comment.is-resolved { opacity: 0.6; }
+.reference-dashboard .signoff-comment .signoff-link-button { justify-self: start; padding-left: 0; }
+.reference-dashboard .signoff-resolved { display: inline-flex; align-items: center; gap: 4px; color: var(--reference-success); font-size: 11px; }
+
+/* Global surfaces */
+.reference-dashboard .signoff-surface-block { margin-top: 14px; }
+.reference-dashboard .reference-global-metrics .reference-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.reference-dashboard .signoff-draft {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 12px;
+  padding: 14px;
+  border: 1px solid var(--reference-warning);
+  border-radius: var(--signoff-radius-md);
+  background: var(--reference-warning-soft);
+}
+.reference-dashboard .signoff-draft header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
+.reference-dashboard .signoff-draft-group { display: grid; gap: 6px; }
+.reference-dashboard .signoff-draft-group > div { display: grid; gap: 2px; padding: 7px 10px; border-left: 2px solid var(--reference-border-strong); background: var(--reference-surface); font-size: 12px; }
+.reference-dashboard .signoff-draft-group small { color: var(--reference-muted); }
+.reference-dashboard .signoff-draft-group.is-added > div { border-left-color: var(--reference-success); }
+.reference-dashboard .signoff-draft-group.is-modified > div { border-left-color: var(--reference-warning); }
+.reference-dashboard .signoff-draft-group.is-removed > div { border-left-color: var(--reference-error); }
+.reference-dashboard .signoff-before { text-decoration: line-through; }
+.reference-dashboard .signoff-after { color: var(--reference-text) !important; }
+.reference-dashboard .reference-global-row { width: 100%; border-left: 0; border-right: 0; background: transparent; text-align: left; }
+.reference-dashboard button.reference-global-row:hover { background: var(--reference-surface-2); }
+.reference-dashboard .reference-team-card small { color: var(--reference-subtle); font-size: 11px; }
+
+/* Agent dock */
+.reference-dashboard .reference-agent-panel { width: 400px; z-index: 30; }
+.reference-dashboard .reference-agent-trigger { gap: 7px; }
+.reference-dashboard .signoff-dock-tabs { display: flex; gap: 4px; margin: 12px 0; padding: 3px; border-radius: 9px; background: var(--reference-surface-2); }
+.reference-dashboard .signoff-dock-tabs button {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--reference-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.reference-dashboard .signoff-dock-tabs button.is-active { background: var(--reference-surface); color: var(--reference-text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.reference-dashboard .signoff-dock-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 12px 0 0;
+  padding: 4px 6px 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--reference-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.reference-dashboard .signoff-dock-back:hover { color: var(--reference-text); }
+.reference-dashboard .signoff-dock-list { display: grid; gap: 4px; }
+.reference-dashboard .signoff-dock-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px;
+  border: 1px solid var(--reference-border);
+  border-radius: 9px;
+  background: var(--reference-surface);
+  text-align: left;
+}
+.reference-dashboard .signoff-dock-row:hover { border-color: var(--reference-border-strong); }
+.reference-dashboard .signoff-dock-row > span:nth-child(2) { display: grid; gap: 2px; min-width: 0; }
+.reference-dashboard .signoff-dock-row strong { overflow: hidden; font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.reference-dashboard .signoff-dock-row small { overflow: hidden; color: var(--reference-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.reference-dashboard .reference-agent-result-heading { color: var(--reference-text); }
+.reference-dashboard .reference-agent-result-heading .reference-pill { margin-left: auto; }
+.reference-dashboard .signoff-run-agent { font-size: 12px; font-weight: 600; }
+.reference-dashboard .reference-agent-error { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+
+.reference-dashboard .signoff-steps { display: grid; gap: 0; margin: 10px 0 0; padding: 0; list-style: none; }
+.reference-dashboard .signoff-step { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; padding-bottom: 12px; }
+.reference-dashboard .signoff-step:not(:last-child)::before {
+  position: absolute;
+  top: 22px;
+  bottom: 0;
+  left: 10px;
+  width: 1px;
+  background: var(--reference-border);
+  content: "";
+}
+.reference-dashboard .signoff-step-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--reference-border-strong);
+  border-radius: 50%;
+  background: var(--reference-surface);
+  color: var(--reference-muted);
+}
+.reference-dashboard .signoff-step.is-done .signoff-step-icon { border-color: var(--reference-success); background: var(--reference-success-soft); color: var(--reference-success); }
+.reference-dashboard .signoff-step.is-running .signoff-step-icon { border-color: var(--reference-progress); color: var(--reference-progress); }
+.reference-dashboard .signoff-step-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--reference-border-strong); }
+.reference-dashboard .signoff-step-body { display: grid; gap: 4px; min-width: 0; padding-top: 2px; }
+.reference-dashboard .signoff-step-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.reference-dashboard .signoff-step-title strong { font-size: 12px; font-weight: 600; }
+.reference-dashboard .signoff-step.is-pending .signoff-step-title strong { color: var(--reference-muted); font-weight: 500; }
+.reference-dashboard .signoff-step-title small { flex: none; color: var(--reference-subtle); font-size: 10px; font-variant-numeric: tabular-nums; }
+.reference-dashboard .signoff-step-body p { margin: 0; color: var(--reference-muted); font-size: 11px; line-height: 1.45; }
+.reference-dashboard .signoff-run-summary { margin: 4px 0 0; color: var(--reference-text); font-size: 12px; line-height: 1.45; }
+
+.reference-dashboard .signoff-ref-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.reference-dashboard .signoff-ref-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 5px 2px 7px;
+  border: 1px solid var(--reference-border);
+  border-radius: 999px;
+  background: var(--reference-surface-2);
+  color: var(--reference-text);
+  font-family: var(--signoff-font-mono);
+  font-size: 10px;
+}
+.reference-dashboard .signoff-ref-chip:hover { border-color: var(--reference-primary); }
+
+.reference-dashboard .signoff-proposal {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--reference-border-strong);
+  border-radius: var(--signoff-radius-md);
+  background: var(--reference-bg);
+}
+.reference-dashboard .signoff-proposal.is-draft { border-color: var(--reference-primary); }
+.reference-dashboard .signoff-proposal header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.reference-dashboard .signoff-proposal h3 { margin: 0; font-size: 13px; font-weight: 650; }
+.reference-dashboard .signoff-proposal-summary,
+.reference-dashboard .signoff-proposal-block p { margin: 0; color: var(--reference-muted); font-size: 12px; line-height: 1.45; }
+.reference-dashboard .signoff-proposal-block { display: grid; gap: 8px; font-size: 12px; }
+.reference-dashboard .signoff-proposal-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.reference-dashboard .signoff-bullets { display: grid; gap: 4px; margin: 0; padding-left: 16px; color: var(--reference-text); }
+.reference-dashboard .signoff-report-section { display: grid; gap: 3px; }
+.reference-dashboard .signoff-diff { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; font-size: 12px; }
+.reference-dashboard .signoff-diff li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 6px; padding: 5px 7px; border-radius: 6px; line-height: 1.4; }
+.reference-dashboard .signoff-diff li svg { margin-top: 2px; }
+.reference-dashboard .signoff-diff li.is-added { background: var(--reference-success-soft); color: var(--reference-text); }
+.reference-dashboard .signoff-diff li.is-added svg { color: var(--reference-success); }
+.reference-dashboard .signoff-diff li.is-removed { background: var(--reference-error-soft); color: var(--reference-muted); text-decoration: line-through; }
+.reference-dashboard .signoff-diff li.is-removed svg { color: var(--reference-error); }
+.reference-dashboard .signoff-diff li.is-same { color: var(--reference-muted); }
+.reference-dashboard .signoff-comment-proposals { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 12px; }
+.reference-dashboard .signoff-comment-proposals li { display: grid; gap: 4px; }
+.reference-dashboard .signoff-proposal-actions { display: grid; gap: 8px; }
+.reference-dashboard .signoff-proposal-actions textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--reference-border);
+  border-radius: 7px;
+  background: var(--reference-surface);
+  color: var(--reference-text);
+  font-size: 12px;
+  resize: vertical;
+}
+.reference-dashboard .signoff-proposal-actions > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.reference-dashboard .signoff-proposal-actions .reference-agent-approve,
+.reference-dashboard .signoff-proposal-actions .reference-agent-ask,
+.reference-dashboard .signoff-danger-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin: 0; }
+.reference-dashboard .signoff-danger-button {
+  min-height: 34px;
+  border: 1px solid var(--reference-error);
+  border-radius: var(--signoff-radius-sm);
+  background: var(--reference-error-soft);
+  color: var(--reference-error);
+  font-size: 12px;
+  font-weight: 600;
+}
+.reference-dashboard .signoff-proposal-applied { display: grid; gap: 6px; color: var(--reference-success); font-size: 11px; font-weight: 600; }
+.reference-dashboard .signoff-proposal-applied > span { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Review portal */
+.review-page .review-status-line { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
+.review-page .review-status-line small { color: var(--reference-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.review-page .review-buttons { flex-wrap: wrap; }
+.review-page .button.review-reject { border-color: var(--reference-error); color: var(--reference-error); }
+.review-page .button:disabled { opacity: 0.6; cursor: wait; }
+
+@media (max-width: 1240px) {
+  .reference-dashboard .signoff-chart-grid { grid-template-columns: minmax(0, 1fr); }
+  .reference-dashboard .reference-global-metrics .reference-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .reference-dashboard .reference-agent-panel { width: min(400px, calc(100vw - 32px)); }
+  .reference-dashboard .signoff-table.is-requirements .signoff-table-row,
+  .reference-dashboard .signoff-table.is-verification .signoff-table-row,
+  .reference-dashboard .signoff-table.is-signoff .signoff-table-row { grid-template-columns: 62px minmax(0, 1fr) 96px; }
+  .reference-dashboard .signoff-table-row > :nth-child(n + 4) { display: none; }
+  .reference-dashboard .signoff-change { grid-template-columns: minmax(0, 1fr); }
+  .reference-dashboard .signoff-evidence-row { grid-template-columns: 64px minmax(0, 1fr) 28px; }
+  .reference-dashboard .signoff-evidence-row > .reference-pill { display: none; }
+  .reference-dashboard .signoff-filter-search { min-width: 0; flex: 1 1 100%; }
+  .reference-dashboard .signoff-hbar { grid-template-columns: 80px minmax(0, 1fr) 58px; }
+  .reference-dashboard .reference-global-metrics .reference-metrics { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Motion: only for people who have not asked to reduce it. */
+@media (prefers-reduced-motion: no-preference) {
+  .reference-dashboard .signoff-stack-bar,
+  .reference-dashboard .signoff-hbar-fill,
+  .reference-dashboard .signoff-meter > span {
+    animation: signoff-grow-x 720ms var(--motion-enter) both;
+  }
+  .reference-dashboard .signoff-hbar:nth-child(2) .signoff-hbar-fill { animation-delay: 60ms; }
+  .reference-dashboard .signoff-hbar:nth-child(3) .signoff-hbar-fill { animation-delay: 120ms; }
+  .reference-dashboard .signoff-hbar:nth-child(4) .signoff-hbar-fill { animation-delay: 180ms; }
+  .reference-dashboard .signoff-stack-bar span,
+  .reference-dashboard .signoff-hbar-fill,
+  .reference-dashboard .signoff-meter > span {
+    transition: flex-basis 600ms var(--motion-enter), width 600ms var(--motion-enter);
+  }
+  .reference-dashboard .reference-metric-card.is-changed {
+    animation: signoff-kpi-flash 1600ms var(--motion-enter);
+  }
+  .reference-dashboard .signoff-step {
+    animation: signoff-step-in 320ms var(--motion-enter) both;
+  }
+  .reference-dashboard .signoff-proposal {
+    animation: signoff-step-in 360ms var(--motion-enter) both;
+  }
+  .reference-dashboard .signoff-search-results {
+    animation: reference-popover-enter 160ms var(--motion-enter) both;
+  }
+}
+
+@keyframes signoff-grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes signoff-kpi-flash {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--reference-primary) 0%, transparent); }
+  20% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--reference-primary) 32%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--reference-primary) 0%, transparent); }
+}
+
+@keyframes signoff-step-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Polish after first live render */
+.reference-dashboard .signoff-chart-card { padding: 0 0 16px; }
+.reference-dashboard .signoff-chart-card > :not(.reference-card-heading) { margin-inline: 18px; }
+.reference-dashboard .signoff-card-hint { margin-top: 12px; margin-bottom: 6px; }
+.reference-dashboard .signoff-chart-card .signoff-hbars { margin-top: 16px; }
+.reference-dashboard .reference-card-heading .signoff-link-button {
+  display: inline-flex;
+  width: auto;
+  height: 30px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+/* KPI ring sits in the corner instead of floating into the legend */
+.reference-dashboard .reference-metric-card .reference-mini-ring {
+  position: absolute;
+  top: 56px;
+  right: 18px;
+  float: none;
+  margin: 0;
+}
+.reference-dashboard .reference-metric-items b { display: inline-block; min-width: 2ch; text-align: right; }
+
+/* Release card next to the attention table */
+.reference-dashboard .signoff-release-card { display: grid; align-content: start; gap: 12px; padding: 18px 16px; }
+.reference-dashboard .signoff-release-card > .reference-pill { justify-self: start; }
+.reference-dashboard .signoff-release-next { display: grid; gap: 3px; }
+.reference-dashboard .signoff-release-next small { color: var(--reference-muted); font-size: 11px; }
+.reference-dashboard .signoff-release-next strong { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.reference-dashboard .signoff-release-card .signoff-readiness-meter { margin: 0; }
+.reference-dashboard .signoff-release-actions { display: grid; gap: 6px; margin-top: 4px; }
+.reference-dashboard .signoff-release-actions button { justify-content: center; width: 100%; min-height: 34px; font-size: 12px; }
+
+/* Activity: the id inside the sentence is the link */
+.reference-dashboard .signoff-inline-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--reference-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--reference-border-strong);
+  text-underline-offset: 2px;
+}
+.reference-dashboard .signoff-inline-link:hover { text-decoration-color: var(--reference-primary); }

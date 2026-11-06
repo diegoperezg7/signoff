@@ -1,6 +1,28 @@
 # Changelog
 
-## Unreleased — Portfolio polish
+## Unreleased — Visual redesign
+
+- New palette: pure black and pure white backgrounds, untinted greys, ink black as the light-mode primary and phosphor lime as the dark-mode primary and signature accent. Status colours shifted so they do not collide with the lime.
+- Inter replaces Geist as the product font; tighter title, KPI and table typography.
+- Redrawn brand mark as an inline SVG that inverts between themes; regenerated favicon, app icons and README lockups.
+- Agent avatars are now Lucide icons on neutral tiles instead of generated 3D images.
+- Charts (coverage trend, verification ring and donut, coverage bars) read the theme tokens.
+- Dashboard layout: wider table next to the drawer, KPI cards without coloured bars, calmer navigation and secondary buttons.
+- Removed the public landing page: `/` now redirects to `/dashboard`.
+- The client review portal follows the same tokens in both themes.
+- Screenshots of every screen in light and dark mode in `docs/screenshots/`.
+- One live store for both projects: the API keeps facts only and derives every metric, list, attention item, activity line, readiness score, delivery check and review story from them. The three override dictionaries and all literal numbers are gone.
+- Coherent bilingual seed: Acme has 86 unique requirements across six components with owners, evidence for every passed requirement, 12 real changes, comments and a 12-run coverage history; Northstar keeps its 12 requirements with the same structure.
+- Every mutation writes an audit event with project, actor and parameters, rendered as a localized activity feed; `/audit` no longer returns events from other projects.
+- Agents run in the background and stream their steps over Server-Sent Events, with replay through `Last-Event-ID` or `?after=`. Tools read the live project context, every run ends with one typed draft proposal, and approving it applies criteria, a verification plan, evidence, a change or comments. Failed runs end as `failed` instead of a server error.
+- New endpoints: requirement detail and update, comments with resolve, multipart evidence upload with CSV inspection, scope extraction into a draft baseline with a diff and approval that applies it, team, activity, and proposals with approve and reject.
+- Verification runs and scope extraction now work for both projects, and the client decision in the portal sets the release status for either one.
+- The web app reads everything through react-query and invalidates shared keys after each action, so all sections stay in sync.
+- Dashboard charts: a coverage trend chart with one point per verification run, horizontal verification status bars instead of the donut, and stacked bars under the requirements and changes KPIs.
+- Motion: KPIs count up on load and animate to new values after an action, bars grow on mount and agent steps enter as they arrive; all of it is disabled under `prefers-reduced-motion`.
+- CORS also allows the dev preview on port 4100.
+
+## Portfolio polish
 
 - Fixed the display font token, which made the client review portal fall back to a serif font.
 - Fixed text buttons in project, template and baseline cards, and tab content being pushed below the requirement drawer.

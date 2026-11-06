@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 import base64
 from app.main import app
+from tests.conftest import wait_for_run
 
 client = TestClient(app)
 
@@ -39,10 +40,11 @@ def test_guest_review_otp_contract_in_mock_mode():
 
 def test_client_review_evidence_reflects_verification_state():
     evidence = client.get('/api/v1/review/acme-review-token').json()['evidence']
-    by_id = {item['id']: item['state'] for item in evidence}
-    assert by_id['REQ-023'] == 'demonstrated'
-    assert by_id['REQ-057'] == 'partially_demonstrated'
-    assert by_id['REQ-071'] == 'not_demonstrated'
+    by_requirement = {item['requirement_id']: item['state'] for item in evidence}
+    assert by_requirement['REQ-023'] == 'demonstrated'
+    assert by_requirement['REQ-057'] == 'partially_demonstrated'
+    # REQ-071 has no evidence yet, so the client sees nothing demonstrated for it.
+    assert by_requirement.get('REQ-071', 'not_demonstrated') == 'not_demonstrated'
 
 
 def test_scope_readiness_graph_and_acceptance():
@@ -133,10 +135,10 @@ def test_contextual_agents_use_allowlisted_tools_and_keep_criteria_as_draft():
         'input': 'Make this requirement easier to verify',
     })
     assert response.status_code == 200
-    run = response.json()
+    detail = wait_for_run(client, response.json()['run_id'])
+    run = detail['run']
     assert run['status'] == 'requires_approval'
-    assert run['requires_approval'] is True
-    assert [item['tool'] for item in run['tool_calls']] == [
+    assert [item['tool'] for item in detail['tool_calls']] == [
         'inspect_requirement', 'analyze_requirement', 'generate_acceptance_criteria'
     ]
     assert run['result']['generate_acceptance_criteria']['status'] == 'draft'
@@ -151,8 +153,8 @@ def test_delivery_agent_returns_readiness_and_attention_trace():
         'input': 'What is blocking client acceptance?',
     })
     assert response.status_code == 200
-    run = response.json()
-    assert run['status'] == 'completed'
+    run = wait_for_run(client, response.json()['run_id'])['run']
+    assert run['status'] == 'requires_approval'
     assert run['result']['get_delivery_readiness']['total_requirements'] == 12
     assert run['result']['list_attention_items']
 

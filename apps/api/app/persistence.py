@@ -81,7 +81,8 @@ class PostgresRepository:
             for index, criterion_text in enumerate((detail or {}).get("criteria", []), 1):
                 criterion_id = stable_uuid(f"{project_key}:{row['id']}:criterion:{index}")
                 if session.scalar(select(AcceptanceCriterion).where(AcceptanceCriterion.id == criterion_id)) is None:
-                    session.add(AcceptanceCriterion(id=criterion_id, requirement_id=requirement_id, text=criterion_text, evaluation_type="semantic", automated=True, status="approved"))
+                    text = criterion_text["text"] if isinstance(criterion_text, dict) else criterion_text
+                    session.add(AcceptanceCriterion(id=criterion_id, requirement_id=requirement_id, text=text,evaluation_type="semantic", automated=True, status="approved"))
 
     def _project_query(self, session: Session, organization_id: str | None = None) -> list[Project]:
         statement = select(Project).where(Project.organization_id == stable_uuid(organization_id or "org_demo"))

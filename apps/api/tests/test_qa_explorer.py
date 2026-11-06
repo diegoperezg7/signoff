@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.qa_explorer import QAExplorer
+from tests.conftest import wait_for_run
 
 
 client = TestClient(app)
@@ -35,8 +36,8 @@ def test_dispatch_routes_qa_question_to_qa_explorer(monkeypatch):
         },
     )
     assert response.status_code == 200
-    payload = response.json()
-    assert payload["agent"]["id"] == "qa-explorer"
+    assert response.json()["agent"]["id"] == "qa-explorer"
+    payload = wait_for_run(client, response.json()["run_id"])["run"]
     assert payload["result"]["run_smoke_check"]["routes_checked"] == 1
     assert payload["result"]["run_smoke_check"]["observations"][0]["passed"] is True
 
@@ -52,7 +53,7 @@ def test_qa_run_links_observation_artifact(monkeypatch):
     monkeypatch.setattr("app.main.qa_explorer", FakeExplorer())
     response = client.post("/api/v1/projects/project_demo/agents/run", json={"agent_id": "qa-explorer", "target_url": "http://localhost:3000/dashboard", "routes": ["http://localhost:3000/dashboard"]})
     assert response.status_code == 200
-    result = response.json()["result"]["run_smoke_check"]
+    result = wait_for_run(client, response.json()["run_id"])["run"]["result"]["run_smoke_check"]
     assert result["evidence_artifact"].startswith("agent-runs/")
     assert len(result["evidence_sha256"]) == 64
 
@@ -71,5 +72,7 @@ def test_agreement_and_evidence_agents_use_shared_project_context():
     evidence = client.post("/api/v1/projects/project_demo/agents/run", json={"agent_id": "evidence-curator"})
     assert agreement.status_code == 200
     assert evidence.status_code == 200
-    assert agreement.json()["result"]["inspect_scope"]["active_version"]["version"] == "v1"
-    assert evidence.json()["result"]["list_evidence"]
+    agreement_run = wait_for_run(client, agreement.json()["run_id"])
+    evidence_run = wait_for_run(client, evidence.json()["run_id"])
+    assert agreement_run["run"]["result"]["inspect_scope"]["active_version"] == "v1"
+    assert evidence_run["run"]["result"]["list_evidence"]["total"]

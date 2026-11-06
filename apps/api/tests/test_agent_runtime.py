@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app, store
+from tests.conftest import wait_for_run
 
 
 client = TestClient(app)
@@ -22,8 +23,10 @@ def test_agent_run_persists_steps_and_checkpoints_with_tenant_scope():
         json={"agent_id": "delivery-analyst", "input": "Explain the current blockers"},
     )
     assert response.status_code == 200
-    run = response.json()
-    assert run["status"] == "completed"
+    assert response.json()["status"] == "queued"
+    run = wait_for_run(client, response.json()["run_id"])["run"]
+    # Every run ends with one draft proposal awaiting a human decision.
+    assert run["status"] == "requires_approval"
     assert run["current_step"] == 3
     assert len(run["checkpoint_ids"]) == 3
 
@@ -58,7 +61,7 @@ def test_approval_endpoint_is_tenant_aware():
         json={"agent_id": "requirements-coach", "requirement_id": "REQ-006"},
     )
     assert response.status_code == 200
-    proposal_id = response.json()["proposal_id"]
+    proposal_id = wait_for_run(client, response.json()["run_id"])["proposal_id"]
     assert proposal_id
     assert client.post(f"/api/v1/ai/proposals/{proposal_id}/approve").status_code == 200
 

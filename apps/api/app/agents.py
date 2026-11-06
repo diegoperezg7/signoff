@@ -90,12 +90,26 @@ AGENTS: tuple[AgentDefinition, ...] = (
 )
 
 
+AGENTS_ES: dict[str, tuple[str, str]] = {
+    "delivery-analyst": ("Analista de entrega", "Explica qué bloquea la release activa y la próxima decisión que hay que tomar."),
+    "requirements-coach": ("Coach de requisitos", "Revisa un requisito y propone criterios de aceptación atómicos y verificables."),
+    "verification-planner": ("Planificador de verificación", "Convierte un requisito en un plan de verificación acotado."),
+    "change-radar": ("Radar de cambios", "Analiza una petición frente a la línea base y la propone como cambio clasificado."),
+    "agreement-analyst": ("Analista del acuerdo", "Detecta compromisos, ambigüedades y criterios que faltan en la línea base activa."),
+    "qa-explorer": ("Explorador QA", "Comprueba la aplicación en marcha contra un requisito y captura observaciones."),
+    "evidence-curator": ("Curador de evidencias", "Encuentra evidencias que faltan, son débiles o han quedado obsoletas."),
+    "acceptance-assistant": ("Asistente de aceptación", "Prepara un resumen de aceptación para el cliente sin decidir por él."),
+}
+
+
 def agent_catalog() -> list[dict[str, Any]]:
     return [
         {
             "id": agent.id,
             "name": agent.name,
+            "name_es": AGENTS_ES[agent.id][0],
             "description": agent.description,
+            "description_es": AGENTS_ES[agent.id][1],
             "tools": list(agent.tools),
             "accent": agent.accent,
         }

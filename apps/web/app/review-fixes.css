@@ -72,13 +72,13 @@
 }
 
 .review-page .evidence-thumb.evidence-warn {
-  color: #b86a00;
-  background: #fff4d9;
+  color: var(--reference-warning);
+  background: var(--reference-warning-soft);
 }
 
 .review-page .evidence-thumb.evidence-bad {
-  color: #c52f40;
-  background: #ffe4e8;
+  color: var(--reference-error);
+  background: var(--reference-error-soft);
 }
 
 .review-actions {
@@ -117,11 +117,11 @@
   min-height: 110px;
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid #dfe5ef;
+  border: 1px solid var(--reference-text);
   border-radius: 8px;
   resize: vertical;
-  color: #111827;
-  background: #fff;
+  color: var(--reference-border);
+  background: var(--reference-surface);
   font-size: 12px;
 }
 

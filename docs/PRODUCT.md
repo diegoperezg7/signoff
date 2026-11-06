@@ -14,6 +14,6 @@ The seeded workspace contains two projects using the same modules: Acme Inc. / R
 
 ## Product surface
 
-Signoff is delivered as a browser-based B2B SaaS, not as a desktop application. The landing page (`/`) introduces the product and routes users into the demo workspace (`/dashboard`). A separate tokenized route (`/review/[token]`) is used for client acceptance, so reviewers can inspect a delivery pack without entering the internal workspace.
+Signoff is delivered as a browser-based B2B SaaS, not as a desktop application. There is no public landing page: `/` opens the demo workspace (`/dashboard`) directly. A separate tokenized route (`/review/[token]`) is used for client acceptance, so reviewers can inspect a delivery pack without entering the internal workspace.
 
 The initial experience is intentionally usable without external credentials: `MOCK_MODE=true` seeds a demo project and lets a user explore the full story before connecting real authentication, storage, LLM and browser providers.
